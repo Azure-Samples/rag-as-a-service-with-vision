@@ -2,14 +2,13 @@
 from fastapi import Depends
 from importlib import import_module
 from langchain_community.document_loaders import *
-from langchain_community.vectorstores.azuresearch import AzureSearch
+from langchain_community.vectorstores.azuresearch import AzureSearch, AzureSearchVectorStoreRetriever
 from langchain_core.embeddings import Embeddings
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import TextSplitter
 from loguru import logger
 from typing import Annotated
-from langchain_community.embeddings.azure_openai import AzureOpenAIEmbeddings
 
 from configs.config import config, Config
 from .config_manager import load_config
@@ -67,32 +66,37 @@ class RagOrchestrator(object):
         )
     
 
-    async def chat(
+    def chat(
         self,
         config_id: str,
-        queyr: str
+        query: str
     ):
-        from langchain_openai import ChatOpenAI
+        from langchain_openai import AzureChatOpenAI
         from langchain_core.prompts import ChatPromptTemplate
         from langchain_core.output_parsers import StrOutputParser
         from langchain_core.runnables import RunnablePassthrough
 
-        template = """Answer the question based only on the following context:
-
-        {context}
-
-        Question: {question}
-        """
-        prompt = ChatPromptTemplate.from_template(template)
-        model = ChatOpenAI()
-
+        logger.debug("Initializing chat dependencies...")
         index_name = _build_index_name(config_id)
+        config = load_config(config_id)
+
+        prompt = ChatPromptTemplate.from_template(config.chat_config.prompt_template)
+        model = AzureChatOpenAI(
+            azure_deployment=config.chat_config.azure_deployment,
+            **config.chat_config.llm_kwargs
+        )
+
+        embedding_function = self._init_embeddings(config.embedding_config)
         vector_store = self._init_azure_search(
             self._config,
             embedding_function,
             index_name
         )
-
+        retriever = AzureSearchVectorStoreRetriever(
+            vectorstore=vector_store,
+            search_type=config.search_config.search_type,
+            k=config.search_config.search_k
+        )
 
         def format_docs(docs):
             return "\n\n".join([d.page_content for d in docs])
@@ -103,19 +107,12 @@ class RagOrchestrator(object):
             | model
             | StrOutputParser()
         )
-        logger.info(f"Starting upload documents for {config_id}")
-        config = load_config(config_id)
-        index_name = _build_index_name(config_id)
-        embedding_function = self._init_embeddings(config.embedding_config)
-        vector_store = self._init_azure_search(
-            self._config,
-            embedding_function,
-            index_name
-        )
+
+        logger.info(f"Chatting with model for {config_id}...")
+        return chain.invoke(query)
 
 
-
-    async def upload_documents(
+    def upload_documents(
         self,
         config_id: str,
         files: list[TempFileReference],

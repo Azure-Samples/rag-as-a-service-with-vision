@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import Any, Dict
 
+from constants import RagConstants
+
 
 class LoaderConfig(BaseModel):
     loader_name: str
@@ -17,14 +19,21 @@ class SplitterConfig(BaseModel):
     splitter_kwargs: Dict[str, Any] = {}
 
 
-class LlmConfig(BaseModel):
-    llm_name: str
+class SearchConfig(BaseModel):
+    search_type: str = RagConstants.DEFAULT_SEARCH_TYPE
+    search_k: int = RagConstants.DEFAULT_SEARCH_K
+
+
+class ChatConfig(BaseModel):
+    prompt_template: str = RagConstants.DEFAULT_PROMPT_TEMPLATE
+    azure_deployment: str = RagConstants.DEFAULT_AZURE_DEPLOYMENT
     llm_kwargs: Dict[str, Any] = {}
 
 
 class RagConfig(BaseModel):
     id: str
-    loader_config: LoaderConfig
-    splitter_config: SplitterConfig
+    chat_config: ChatConfig = ChatConfig()
     embedding_config: EmbeddingConfig
-    llm_config: LlmConfig
+    loader_config: LoaderConfig
+    search_config: SearchConfig = SearchConfig()
+    splitter_config: SplitterConfig

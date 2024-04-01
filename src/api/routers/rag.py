@@ -2,6 +2,7 @@ import tempfile
 from fastapi import APIRouter, Depends, UploadFile, Response
 from typing import Annotated
 
+from models.requests.chat_request import ChatRequest
 from models.temp_file_reference import TempFileReference
 from services.rag_orchestrator import RagOrchestrator
 
@@ -31,11 +32,13 @@ async def upload_documents(
         )
 
     
-    await rag_orchestrator.upload_documents(rag_config, temp_file_references)
-    return Response(status_code=201)
+    rag_orchestrator.upload_documents(rag_config, temp_file_references)
+    return Response(status_code=204)
 
 
 @router.post("/chat")
-async def chat():
-    return {"username": "fakecurrentuser"}
-
+async def chat(
+    body: ChatRequest,
+    rag_orchestrator: Annotated[RagOrchestrator, Depends(RagOrchestrator)]
+):
+    return rag_orchestrator.chat(body.rag_config, body.query)
