@@ -42,3 +42,11 @@ async def chat(
     rag_orchestrator: Annotated[RagOrchestrator, Depends(RagOrchestrator)]
 ):
     return rag_orchestrator.chat(body.rag_config, body.query)
+
+
+@router.post("/search")
+async def search(
+    body: ChatRequest,
+    rag_orchestrator: Annotated[RagOrchestrator, Depends(RagOrchestrator)]
+):
+    return rag_orchestrator.search(body.rag_config, body.query)

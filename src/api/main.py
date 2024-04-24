@@ -2,10 +2,12 @@ from configs.config import config
 from fastapi import FastAPI
 
 from routers import rag
+from routers import config
 
 
 app = FastAPI()
 app.include_router(rag.router)
+app.include_router(config.router)
 
 
 if __name__ == "__main__":

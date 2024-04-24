@@ -1,0 +1,29 @@
+{
+    "id": "example-1",
+    "name": "example",
+    "loader_config": {
+        "loader_name": "UnstructuredMarkdownLoader",
+        "loader_kwargs": {}
+    },
+    "splitter_config": {
+        "splitter_name": "RecursiveCharacterTextSplitter",
+        "splitter_kwargs": {
+            "chunk_size": 1000,
+            "chunk_overlap": 200
+        }
+    },
+    "embedding_config": {
+        "embedding_model_name": "AzureOpenAIEmbeddings",
+        "embedding_model_kwargs": {
+            "azure_deployment": "text-embedding-ada-002",
+            "openai_api_version": "2023-12-01-preview"
+        }
+    },
+    "llm_config": {
+        "llm_name": "AzureOpenAI",
+        "llm_kwargs": {
+            "api_version": "2023-12-01-preview",
+            "deployment_name": "gpt-35-turbo"
+        }
+    }
+}

@@ -1,5 +1,5 @@
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 from importlib import import_module
 from langchain_community.document_loaders import *
 from langchain_community.vectorstores.azuresearch import AzureSearch, AzureSearchVectorStoreRetriever
@@ -7,13 +7,20 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import TextSplitter
+
+# TOOO: Reorganize imports
+from langchain_openai import AzureChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
 from loguru import logger
 from typing import Annotated
 
 from configs.config import config, Config
 from .config_manager import load_config
 from models.temp_file_reference import TempFileReference
-from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig
+from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig
+from .cosmos_config_manager import CosmosConfigManager
 
 
 def _build_index_name(config_id: str):
@@ -22,9 +29,15 @@ def _build_index_name(config_id: str):
 
 class RagOrchestrator(object):
     _config: Config
+    _cosmos_config_manager: CosmosConfigManager
 
-    def __init__(self, config: Annotated[Config, Depends(Config)]):
+    def __init__(
+        self,
+        config: Annotated[Config, Depends(Config)],
+        cosmos_config_manager: Annotated[CosmosConfigManager, Depends(CosmosConfigManager)]
+    ):
         self._config = config
+        self._cosmos_config_manager = cosmos_config_manager
 
 
     def _init_embeddings(self, embedding_config: EmbeddingConfig) -> Embeddings:
@@ -64,21 +77,41 @@ class RagOrchestrator(object):
             index_name=index_name,
             embedding_function=embedding_function
         )
-    
+
+    def _try_get_config(self, config_id: str)-> RagConfig:
+        config = self._cosmos_config_manager.get(config_id)
+        if not config:
+            raise HTTPException(status_code=404, detail=f"Config {config_id} not found")
+        return config
+
+    def search(
+        self,
+        config_id: str,
+        query: str
+    ):
+        logger.debug("Initializing search dependencies...")
+        index_name = _build_index_name(config_id)
+        config = self._try_get_config(config_id)
+
+        embedding_function = self._init_embeddings(config.embedding_config)
+        vector_store = self._init_azure_search(
+            self._config,
+            embedding_function,
+            index_name
+        )
+
+        logger.info(f"Searching for {query} in {config_id}...")
+        return vector_store.search(query)
+
 
     def chat(
         self,
         config_id: str,
         query: str
     ):
-        from langchain_openai import AzureChatOpenAI
-        from langchain_core.prompts import ChatPromptTemplate
-        from langchain_core.output_parsers import StrOutputParser
-        from langchain_core.runnables import RunnablePassthrough
-
         logger.debug("Initializing chat dependencies...")
         index_name = _build_index_name(config_id)
-        config = load_config(config_id)
+        config = self._try_get_config(config_id)
 
         prompt = ChatPromptTemplate.from_template(config.chat_config.prompt_template)
         model = AzureChatOpenAI(
@@ -118,7 +151,7 @@ class RagOrchestrator(object):
         files: list[TempFileReference],
     ):
         logger.info(f"Starting upload documents for {config_id}")
-        config = load_config(config_id)
+        config = self._try_get_config(config_id)
         index_name = _build_index_name(config_id)
         embedding_function = self._init_embeddings(config.embedding_config)
         splitter = self._init_splitter(config.splitter_config)

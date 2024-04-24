@@ -32,6 +32,7 @@ class ChatConfig(BaseModel):
 
 class RagConfig(BaseModel):
     id: str
+    name: str
     chat_config: ChatConfig = ChatConfig()
     embedding_config: EmbeddingConfig
     loader_config: LoaderConfig
