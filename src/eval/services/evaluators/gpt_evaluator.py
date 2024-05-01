@@ -23,4 +23,4 @@ class GptEvaluator(BaseEvaluator[int]):
             input=input
         )
 
-        return score
+        return score["score"]

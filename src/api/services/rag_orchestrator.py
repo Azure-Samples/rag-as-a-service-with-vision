@@ -19,7 +19,7 @@ from typing import Annotated
 from configs.config import config, Config
 from .config_manager import load_config
 from models.temp_file_reference import TempFileReference
-from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig
+from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig, SearchConfig
 from .cosmos_config_manager import CosmosConfigManager
 
 
@@ -68,12 +68,14 @@ class RagOrchestrator(object):
     def _init_azure_search(
         self,
         config: Config,
+        search_config: SearchConfig,
         embedding_function: Embeddings,
         index_name: str
     ) -> AzureSearch:
         return AzureSearch(
             azure_search_endpoint=config._azure_search_endpoint,
             azure_search_key=config._azure_search_api_key,
+            search_type=search_config.search_type,
             index_name=index_name,
             embedding_function=embedding_function
         )
@@ -96,12 +98,13 @@ class RagOrchestrator(object):
         embedding_function = self._init_embeddings(config.embedding_config)
         vector_store = self._init_azure_search(
             self._config,
+            config.search_config,
             embedding_function,
             index_name
         )
 
         logger.info(f"Searching for {query} in {config_id}...")
-        return vector_store.search(query)
+        return vector_store.similarity_search(query, k=config.search_config.search_k)
 
 
     def chat(
@@ -122,6 +125,7 @@ class RagOrchestrator(object):
         embedding_function = self._init_embeddings(config.embedding_config)
         vector_store = self._init_azure_search(
             self._config,
+            config.search_config,
             embedding_function,
             index_name
         )
@@ -157,6 +161,7 @@ class RagOrchestrator(object):
         splitter = self._init_splitter(config.splitter_config)
         vector_store = self._init_azure_search(
             self._config,
+            config.search_config,
             embedding_function,
             index_name
         )

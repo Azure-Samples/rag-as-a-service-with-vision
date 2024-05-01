@@ -36,12 +36,12 @@ class ApiRequestManager(object):
         }
         res = self._session.post(
             files=files,
-            url=self.upload_url,
+            url=self._upload_url,
             params=params
         )
 
         return res
-        
+
 
     def upload_config(
         self,
@@ -49,7 +49,7 @@ class ApiRequestManager(object):
     ):
         res = self._session.post(
             json=config,
-            url=self.upload_config_url
+            url=self._upload_config_url
         )
 
         return res
@@ -85,7 +85,7 @@ class ApiRequestManager(object):
 
         res = self._session.post(
             json=body,
-            url=self._chat_url
+            url=self._search_url
         )
 
         return res
@@ -94,16 +94,15 @@ class ApiRequestManager(object):
     @property
     def _chat_url(self) -> str:
         return f"{self._base_url}/rag/chat"
-    
+
     @property
-    def search_url(self) -> str:
+    def _search_url(self) -> str:
         return f"{self._base_url}/rag/search"
 
     @property
-    def upload_url(self) -> str:
+    def _upload_url(self) -> str:
         return f"{self._base_url}/rag/upload"
 
-    
     @property
-    def upload_config_url(self) -> str:
+    def _upload_config_url(self) -> str:
         return f"{self._base_url}/config/"

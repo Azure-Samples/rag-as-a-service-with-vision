@@ -10,7 +10,18 @@
             "request": "launch",
             "module": "main",
             "cwd": "${workspaceFolder}/src/api",
-            "justMyCode": false
+            "justMyCode": false,
+        },
+        {
+            "name": "Python Debugger: Eval",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "main",
+            "cwd": "${workspaceFolder}/src/eval",
+            "justMyCode": false,
+            "args": [
+                "--skip-ingest"
+            ]
         }
     ]
 }

@@ -405,3 +405,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+
+# api files to ignore
+api/temp/**
+!api/temp/.gitkeep
