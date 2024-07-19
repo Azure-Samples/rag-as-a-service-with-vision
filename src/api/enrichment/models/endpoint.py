@@ -4,27 +4,28 @@ from pydantic import BaseModel, conlist, constr
 class Cache(BaseModel):
     enabled: bool
     key_format: Optional[str] = '{hash}'
-    expiry: Optional[constr(regex=r'^\d{2}:\d{2}:\d{2}:\d{2}$')] = None
- 
+    expiry: Optional[constr(pattern=r'^\d{2}:\d{2}:\d{2}:\d{2}$')] = None
+
 class Classifier(BaseModel):
     enabled: bool
     threshold: float
- 
-class GPT4V(BaseModel):
+
+class Mllm(BaseModel):
     enabled: Optional[bool]
     prompt: str
     llm_kwargs: dict
+    model: str
     detail_mode: Literal['low', 'high', 'auto'] = 'auto'
- 
+
 class Features(BaseModel):
     cache: Cache
     classifier: Classifier
-    gpt4v: GPT4V
+    mllm: Mllm
 
 class MediaEnrichmentRequest(BaseModel):
     domain: str
     config_version: str
-    images: conlist(str, min_items=1, max_items=10) # Base64-encoded images
+    images: conlist(str, min_length=1, max_length=10) # Base64-encoded images
     features: Features
 
 class GeneratedResponse(BaseModel):

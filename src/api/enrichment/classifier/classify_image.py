@@ -4,11 +4,8 @@ from enrichment.config.enrichment_config import enrichment_config
 
 # Function to categorize images based on tags
 def categorize_image(tags_with_confidence, confidence_score_value):
-    
     categories_tags_values = enrichment_config.classifier_config_data
-
     categories = categories_tags_values["categories"]
-    
     ignore_tags = set(tuple(tag) for tag in categories["ignore_tags"])
 
     # limiting tags considered based on confidence score

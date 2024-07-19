@@ -34,7 +34,7 @@ class CosmosConfig(object):
             self._azure_cosmos_db_container
         ):
             raise Exception(f"The following environment variables are required for cosmos db: {', '.join(_AZURE_COSMOS_DB_ENV_VARS)}")
-        
+
 
     @property
     def azure_cosmos_db_uri(self):
@@ -43,11 +43,11 @@ class CosmosConfig(object):
     @property
     def azure_cosmos_db_key(self):
         return self._azure_cosmos_db_key
-    
+
     @property
     def azure_cosmos_db_database(self):
         return self._azure_cosmos_db_database
-    
+
     @property
     def azure_cosmos_db_container(self):
         return self._azure_cosmos_db_container

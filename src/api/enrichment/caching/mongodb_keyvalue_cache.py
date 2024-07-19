@@ -20,10 +20,10 @@ class MongoDbKeyValueCache:
     def get(self, key: str):
         """
         This operation trying to find a cached item with _id=key and return if there is any value.
-        
+
         Args:
             key (string): The input key.
-    
+
         Returns:
             value: a json object stored in the value field of document.
         """
@@ -47,7 +47,7 @@ class MongoDbKeyValueCache:
         if expiry:
             days, hours, minutes, seconds = map(int, expiry.split(":"))
             ttl = ((days * 24 + hours ) * 60 + minutes) * 60 + seconds
-        
+
             self.mongo_collection.update_one({'_id': key}, {'$set': {'value': value, 'ttl': ttl, 'createdAt': datetime.datetime.now()}}, upsert=True)
         else:
             self.mongo_collection.update_one({'_id': key}, {'$set': {'value': value, 'createdAt': datetime.datetime.now()}}, upsert=True)

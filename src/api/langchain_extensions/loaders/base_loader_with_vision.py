@@ -46,9 +46,9 @@ class BaseVisionLoader(BaseLoader):
         self.LOADER_BATCH_COUNTER = int(os.environ.get("LOADER_BATCH_COUNTER", 10))
         self.surrounding_text_start = surrounding_text_start
         self.surrounding_text_end = surrounding_text_end
- 
+
         self.vision_workflow = vision_workflow
-    
+
     def _sanitize_filename(self, filename: str) -> str:
 
         os_name = platform.system()
@@ -68,18 +68,18 @@ class BaseVisionLoader(BaseLoader):
         filename = os.path.basename(path)
         sanitized_filename = self._sanitize_filename(filename)
         return sanitized_filename
-    
+
     def get_image_path(self, image_url) -> str:
         image_name = self._convert_url_to_filename(image_url)
 
         image_file_path = os.path.join(
             self.destination_image_folder, f"{self.image_path_prefix.lower()}_{image_name}")
-        
+
         return image_file_path
 
     def load_file(self) -> list[Document]:
         pass
-    
+
     def load(self) -> list[Document]:
         """
            If media enrichment is enabled then image annotations will be processed           
@@ -102,11 +102,11 @@ class BaseVisionLoader(BaseLoader):
                 total_start_time = timer()
 
                 documents = []
-                images_count = 0 
+                images_count = 0
                 for doc in docs:
                     metadata = doc.metadata
                     content = doc.page_content
-                    
+
                     # If the document has images in it, it will have image_collection present in its metadata
                     if "image_collection" in metadata:
                         if self.vision_workflow:
@@ -116,34 +116,34 @@ class BaseVisionLoader(BaseLoader):
 
                         images_count = len(image_collection)
                         metadata.pop("image_collection")
-                        
+
                         image_collection_new = {}
-                        image_annotation_list = []                  
+                        image_annotation_list = []
 
                         # image_map contains all the images and their descirption if image is processed by GPT4V
                         start_time = timer()
                         batch_size = self.determine_batch_size(len(image_collection))
-                        
+
                         image_map = asyncio.run(self.async_get_image_description_map(image_collection, self.media_enrichment, batch_size, content))
-                        
+
                         end_time = timer()
                         elapsed_time = end_time - start_time
 
-                        if image_map:                    
+                        if image_map:
                             log.debug(f"Image description generation took {elapsed_time:.4f} seconds for {len(image_map)} images.")
-                        
+
                             for url in image_collection:
                                 image_marker = f"![{url}]"
                                 image_path = self.save_image(url, image_collection[url])
                                 image_annotation = f"({url})"
                                 desc = image_map[url]
-                                
+
                                 # only generate image docs if there is a description associated with image and the flag is enabled                           
                                 if self.separate_docs_for_images and desc:
                                     img_doc_str = f"![{desc}]({url})"
                                     doc_exists = any(existing_doc.page_content == img_doc_str for existing_doc in documents)
                                     # check if image doc was already added before
-                                    if not doc_exists:                            
+                                    if not doc_exists:
                                         img_doc_metadata = metadata.copy()
                                         img_doc_collection = {
                                             url: {
@@ -156,7 +156,7 @@ class BaseVisionLoader(BaseLoader):
                                         img_doc_metadata["content_document"] = False
                                         documents.append(Document(page_content=img_doc_str, metadata=img_doc_metadata))
                                 # add description to content doc only if separate image docs are not created
-                                elif not self.separate_docs_for_images:                                
+                                elif not self.separate_docs_for_images:
                                     image_annotation = f'![{desc}]' + image_annotation
 
                                 # Replace all image markers with the full image annotation for each instance of the image in the doc
@@ -165,7 +165,7 @@ class BaseVisionLoader(BaseLoader):
                                 content = content.replace(image_marker, image_annotation) # Replaces all instances of image_marker with image_annotation
                                 image_collection_new[url] = {"description": desc, 'positions': [], 'image_path': image_path}
                                 image_annotation_list.append((url, image_annotation))
-                            
+
                             # Tterate over all image annotations now that content is finalized and calculate positions
                             if content:
                                 for (img_url, annotation) in image_annotation_list:
@@ -173,13 +173,13 @@ class BaseVisionLoader(BaseLoader):
 
                             metadata["image_collection"] = image_collection_new
                             metadata["content_document"] = True
-                        
+
                         if content:
                             documents.append(Document(page_content=content, metadata=metadata))
-                    
+
                     # If no images in the document, just append the document as-is
                     else:
-                        documents.append(doc)        
+                        documents.append(doc)
 
                     total_end_time = timer()
                     elapsed_time = total_end_time - total_start_time
@@ -206,26 +206,26 @@ class BaseVisionLoader(BaseLoader):
         text = re.sub(url_pattern, replace_image, text)
 
         matches = re.finditer(r'\b' + re.escape(keyword) + r'\b', text, re.IGNORECASE)
-        
+
         # Initialize the result list
         result = []
-        
+
         # Iterate over each match
         for match in matches:
             # Get the start and end indices of the match
             start, end = match.span()
-            
+
             # Calculate the surrounding text indices
             before_start = max(0, start - self.surrounding_text_start)
             after_end = min(len(text), end + self.surrounding_text_end)
-            
+
             # Ensure that the surrounding text does not have broken words
             while before_start > 0 and text[before_start:start] and not text[before_start:start][0].isspace():
                 before_start -= 1
 
             if text[before_start:end]:
                 result.append("Previous text:\n"+text[before_start:end].strip())
-            
+
             while after_end < len(text) - 1 and text[end:after_end] and not text[end:after_end][-1].isspace():
                 after_end += 1
 
@@ -233,7 +233,7 @@ class BaseVisionLoader(BaseLoader):
                 result.append("Next text:\n"+text[end+1:after_end].strip())
 
         return result
-    
+
     def update_metadata_with_image_annotation_positions(self, content, image_annotation, image_collection, url):    
         img_tag_end_index = 0  # Initialize the img tag end index
         while True:
@@ -252,10 +252,10 @@ class BaseVisionLoader(BaseLoader):
                 image_collection[url]['positions'].append({'start': annotation_start_index, 'end': annotation_end_index})
             else:
                 log.error('Not supposed to reach this error - image_collection should be populated with ')
-            
+
             log.debug(f"src-{url}, start-{annotation_start_index}, end-{annotation_end_index}, img-end-{img_tag_end_index}")         
 
-        return content, image_collection        
+        return content, image_collection
 
     async def async_get_image_description_map(self, image_collection, media_enrichment, batch_size, content):
         """
@@ -274,10 +274,10 @@ class BaseVisionLoader(BaseLoader):
 
         if __debug__:
             batch_loop_count = 0
-        
-        try: 
+
+        try:
             for url in image_collection:
-                img_b64 = image_collection[url]                
+                img_b64 = image_collection[url]
                 # this is needed for concurrent calls
                 media_enrichment_copy =  copy.deepcopy(media_enrichment)
                 surrounding_text = ''

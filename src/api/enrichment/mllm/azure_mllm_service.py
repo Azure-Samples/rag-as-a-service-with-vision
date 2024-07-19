@@ -4,7 +4,7 @@ from enrichment.config.enrichment_config import enrichment_config
 from enrichment.utils.files_util import get_image_format
 import asyncio
 
-class AzureGpt4VService:
+class AzureMllmService:
     def __init__(self):
         self._initialize_openai_client()
 
@@ -13,8 +13,8 @@ class AzureGpt4VService:
         openai.api_base = enrichment_config.gpt_4v_endpoint
         openai.api_key = enrichment_config.gpt_4v_key
         openai.api_version = enrichment_config.gpt_4v_api_version
-    
-    async def async_chat(self, images: list[str], prompt: str, kwargs: dict, detail_mode: str) -> GeneratedResponse: 
+
+    async def async_chat(self, images: list[str], prompt: str, kwargs: dict, detail_mode: str, model: str) -> GeneratedResponse:
         messages = []
         messages.append({ "role": "system", "content": prompt })
 
@@ -26,7 +26,7 @@ class AzureGpt4VService:
         messages.append({ "role": "user", "content": content })
 
         response = await openai.ChatCompletion.acreate(
-            engine=enrichment_config.gpt_4v_model,
+            engine=model,
             messages=messages,
             **kwargs
         )
@@ -35,9 +35,9 @@ class AzureGpt4VService:
             return GeneratedResponse(content=response['choices'][0]['message']['content'], grounding_spans=response['choices'][0]['enhancement']['Grounding']['Lines'][0]['Spans'])
         else:
             return GeneratedResponse(content=response['choices'][0]['message']['content'], grounding_spans=None)
-    
+
     def sync_chat(self, images: list[str], prompt: str, kwargs: dict, detail_mode: str) -> GeneratedResponse: 
         loop = asyncio.get_event_loop()
         return loop.run_until_complete(self.async_chat(images,prompt,kwargs,detail_mode))
-    
-azure_gpt4v_service = AzureGpt4VService()
+
+azure_mllm_service = AzureMllmService()

@@ -1,7 +1,8 @@
 from pydantic import BaseModel
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from constants import RagConstants
+from enrichment.models.endpoint import MediaEnrichmentRequest
 
 
 class LoaderConfig(BaseModel):
@@ -38,3 +39,4 @@ class RagConfig(BaseModel):
     loader_config: LoaderConfig
     search_config: SearchConfig = SearchConfig()
     splitter_config: SplitterConfig
+    media_enrichment: Optional[MediaEnrichmentRequest]

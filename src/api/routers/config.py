@@ -25,5 +25,5 @@ def get_config(
     rag_config = cosmos_config_manager.get(id)
     if not rag_config:
         return Response(status_code=404)
-    
+
     return rag_config
