@@ -20,7 +20,6 @@
             "cwd": "${workspaceFolder}/src/eval",
             "justMyCode": false,
             "args": [
-                "--skip-ingest"
             ]
         }
     ]

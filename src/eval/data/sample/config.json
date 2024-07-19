@@ -23,7 +23,7 @@
         "llm_name": "AzureOpenAI",
         "llm_kwargs": {
             "api_version": "2023-12-01-preview",
-            "deployment_name": "gpt-35-turbo"
+            "deployment_name": "gpt-4o"
         }
     }
 }
