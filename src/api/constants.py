@@ -4,6 +4,6 @@ class RagConstants(object):
         "{context}\n\n"
         "Question: {question}"
     )
-    DEFAULT_AZURE_DEPLOYMENT = "gpt-35-turbo"
+    DEFAULT_AZURE_DEPLOYMENT = "gpt-4o"
     DEFAULT_SEARCH_TYPE = "hybrid"
     DEFAULT_SEARCH_K = 10
