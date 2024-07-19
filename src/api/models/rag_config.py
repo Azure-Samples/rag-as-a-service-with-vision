@@ -39,4 +39,4 @@ class RagConfig(BaseModel):
     loader_config: LoaderConfig
     search_config: SearchConfig = SearchConfig()
     splitter_config: SplitterConfig
-    media_enrichment: Optional[MediaEnrichmentRequest]
+    media_enrichment: Optional[MediaEnrichmentRequest] = None
