@@ -14,13 +14,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 from loguru import logger
-from typing import Annotated
+from typing import Annotated, Optional
 
+from enrichment.models.endpoint import MediaEnrichmentRequest
 from configs.config import config, Config
 from .config_manager import load_config
 from models.temp_file_reference import TempFileReference
 from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig, SearchConfig
 from .cosmos_config_manager import CosmosConfigManager
+from .vision_loader_manager import vision_loader_manager
 
 
 def _build_index_name(config_id: str):
@@ -51,12 +53,20 @@ class RagOrchestrator(object):
         self,
         file_path: str,
         loader_config: LoaderConfig,
+        media_enrichment: Optional[MediaEnrichmentRequest] = None
     ) -> list[Document]:
-        loader: BaseLoader = getattr(
-            import_module("langchain_community.document_loaders"),
-            loader_config.loader_name
-        )
-        return loader(file_path=file_path, **loader_config.loader_kwargs).load()
+
+        if (vision_loader_manager.is_vision_loader(loader_config.loader_name)):
+            if not media_enrichment:
+                raise Exception("A vision loader must set a media_enrichment request.")
+            
+            return vision_loader_manager.initialize_vision_loader(loader_config, file_path, media_enrichment).load()
+        else:
+            loader: BaseLoader = getattr(
+                import_module("langchain_community.document_loaders"),
+                loader_config.loader_name
+            )
+            return loader(file_path=file_path, **loader_config.loader_kwargs).load()
 
     def _init_splitter(self, splitter_config: SplitterConfig) -> TextSplitter:
         splitter = getattr(
@@ -168,7 +178,7 @@ class RagOrchestrator(object):
 
         for i, file in enumerate(files):
             logger.debug(f"loading file {i + 1} of {len(files)}...")
-            docs = self._load_documents(file.temp_file_path, config.loader_config)
+            docs = self._load_documents(file.temp_file_path, config.loader_config, config.media_enrichment)
             logger.debug(f"splitting file {i + 1} of {len(files)}...")
             docs = splitter.split_documents(docs)
             logger.debug(f"persisting file {i + 1} of {len(files)}...")

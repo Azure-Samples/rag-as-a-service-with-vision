@@ -1,18 +1,12 @@
 import openai
+import os
+from openai import AzureOpenAI
 from enrichment.models.endpoint import GeneratedResponse
 from enrichment.config.enrichment_config import enrichment_config
 from enrichment.utils.files_util import get_image_format
 import asyncio
 
 class AzureMllmService:
-    def __init__(self):
-        self._initialize_openai_client()
-
-    def _initialize_openai_client(self):
-        openai.api_type = "azure"
-        openai.api_base = enrichment_config.gpt_4v_endpoint
-        openai.api_key = enrichment_config.gpt_4v_key
-        openai.api_version = enrichment_config.gpt_4v_api_version
 
     async def async_chat(self, images: list[str], prompt: str, kwargs: dict, detail_mode: str, model: str) -> GeneratedResponse:
         messages = []
@@ -25,16 +19,24 @@ class AzureMllmService:
 
         messages.append({ "role": "user", "content": content })
 
-        response = await openai.ChatCompletion.acreate(
-            engine=model,
-            messages=messages,
+        client = AzureOpenAI(
+            azure_endpoint = enrichment_config.gpt_4v_endpoint,
+            azure_deployment = enrichment_config.gpt_4v_model,
+            api_version = enrichment_config.gpt_4v_api_version,
+            api_key = enrichment_config.gpt_4v_key,
+        )
+
+        completion = client.chat.completions.create(
+            model = enrichment_config.gpt_4v_model,
+            messages = messages,
             **kwargs
         )
 
-        if 'enhancement' in response['choices'][0] and 'Grounding' in response['choices'][0]['enhancement']:
-            return GeneratedResponse(content=response['choices'][0]['message']['content'], grounding_spans=response['choices'][0]['enhancement']['Grounding']['Lines'][0]['Spans'])
-        else:
-            return GeneratedResponse(content=response['choices'][0]['message']['content'], grounding_spans=None)
+        print(completion.choices[0].message.content.strip())
+
+        # TODO Include grounding
+        return GeneratedResponse(content=completion.choices[0].message.content.strip(), grounding_spans=None)
+
 
     def sync_chat(self, images: list[str], prompt: str, kwargs: dict, detail_mode: str) -> GeneratedResponse: 
         loop = asyncio.get_event_loop()

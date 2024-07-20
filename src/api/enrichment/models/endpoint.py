@@ -8,14 +8,14 @@ class Cache(BaseModel):
 
 class Classifier(BaseModel):
     enabled: bool
-    threshold: float
+    threshold: Optional[float] = 0.8
 
 class Mllm(BaseModel):
     enabled: Optional[bool]
     prompt: str
     llm_kwargs: dict
     model: str
-    detail_mode: Literal['low', 'high', 'auto'] = 'auto'
+    detail_mode: Optional[Literal['low', 'high', 'auto']] = 'auto'
 
 class Features(BaseModel):
     cache: Cache
@@ -23,9 +23,7 @@ class Features(BaseModel):
     mllm: Mllm
 
 class MediaEnrichmentRequest(BaseModel):
-    domain: str
-    config_version: str
-    images: conlist(str, min_length=1, max_length=10) # Base64-encoded images
+    images: conlist(str, min_length=0, max_length=10) # Base64-encoded images
     features: Features
 
 class GeneratedResponse(BaseModel):

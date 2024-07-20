@@ -8,7 +8,7 @@ from enrichment.classifier.classify_image import categorize_image
 from enrichment.classifier.vision_image_analysis import azure_vision_service
 from enrichment.models.endpoint import MediaEnrichmentRequest, MediaEnrichmentResponse
 from azure.ai.vision.imageanalysis.models import VisualFeatures
-from api.enrichment.mllm.azure_mllm_service import azure_mllm_service
+from enrichment.mllm.azure_mllm_service import azure_mllm_service
 import nest_asyncio
 from enrichment.utils.custom_exceptions import CustomServiceException, BadRequestError
 from azure.core.exceptions import HttpResponseError

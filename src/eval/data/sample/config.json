@@ -2,8 +2,26 @@
     "id": "example-1",
     "name": "example",
     "loader_config": {
-        "loader_name": "UnstructuredMarkdownLoader",
+        "loader_name": "MHTMLLoaderWithVision",
         "loader_kwargs": {}
+    },
+    "media_enrichment": {
+        "images": [],
+        "features": {
+            "cache": {
+                "enabled": false
+            },
+            "classifier": {
+                "enabled": false
+            },
+            "mllm": {
+                "enabled": true,
+                "prompt": "Be a helpful assistant and answer anything!",
+                "llm_kwargs": {},
+                "model": "gpt-4o",
+                "detail_mode": "auto"
+            }
+        }
     },
     "splitter_config": {
         "splitter_name": "RecursiveCharacterTextSplitter",

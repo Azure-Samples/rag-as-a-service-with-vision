@@ -15,7 +15,7 @@ from PIL import Image
 from io import BytesIO
 
 from enrichment.enrichment_service import EnrichmentService
-from models.data.endpoint import MediaEnrichment
+from enrichment.models.endpoint import MediaEnrichmentRequest
 from timeit import default_timer as timer
 
 class BaseVisionLoader(BaseLoader):
@@ -34,7 +34,7 @@ class BaseVisionLoader(BaseLoader):
         if media_enrichment:
             media_enrichment_req = dict(media_enrichment)
             media_enrichment_req["images"] = []
-            self.media_enrichment = MediaEnrichment(**media_enrichment_req)
+            self.media_enrichment = MediaEnrichmentRequest(**media_enrichment_req)
 
         self.destination_image_folder = os.path.dirname(
             file_path).replace("pending", "images")
@@ -263,7 +263,7 @@ class BaseVisionLoader(BaseLoader):
 
         Args:
             parts (list[Message]): list of email message parts.
-            media_enrichment (MediaEnrichment): The media enrichment configuration.
+            media_enrichment (MediaEnrichmentRequest): The media enrichment configuration.
 
         Returns:
             dict[str, str]: A dictionary mapping image URLs to descriptions.
@@ -328,14 +328,13 @@ class BaseVisionLoader(BaseLoader):
 
         Args:
             img (str): The base 64 encode image string.
-            media_enrichment (MediaEnrichment): The media enrichment configuration.
+            media_enrichment (MediaEnrichmentRequest): The media enrichment configuration.
 
         Returns:
             str: The description generated for the image.
         """  
         try:        
             media_enrichment.images = [img_b64]
-            media_enrichment.surrounding_text = surrounding_text
             resp = await self.enrichment_service.async_get_media_enrichment_result(media_enrichment)
             generated_response = resp.generated_response
             desc = generated_response.content if generated_response else ""            

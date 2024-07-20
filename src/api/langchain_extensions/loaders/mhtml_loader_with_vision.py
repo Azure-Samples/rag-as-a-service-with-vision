@@ -10,8 +10,8 @@ from langchain_core.documents import Document
 import argparse
 from loguru import logger as log
 from bs4 import BeautifulSoup
-from langchain_extensions.loaders.base_vision_loader import BaseVisionLoader
-from models.data.endpoint import MediaEnrichment
+from langchain_extensions.loaders.base_loader_with_vision import BaseVisionLoader
+from enrichment.models.endpoint import MediaEnrichmentRequest
 import urllib.parse
 
 class MHTMLLoaderWithVision(BaseVisionLoader):
@@ -268,12 +268,12 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 if __name__ == "__main__":
-    from models.data.endpoint import Cache, Classifier, GPT4V, Features
+    from enrichment.models.endpoint import Cache, Classifier, GPT4V, Features
     args = get_args()
 
     prompt = "You are an assistant whose job is to provide the explanation of images which is going to be used to retrieve the images."
     features = Features(cache=Cache(enabled=False), classifier=Classifier(enabled=True, threshold=0.8), gpt4v=GPT4V(enabled=True, prompt=prompt, llm_kwargs={"max_tokens": 800}))
-    enrichment = MediaEnrichment(domain="test_domain", config_version="03-28-2024", images=[], features=features)
+    enrichment = MediaEnrichmentRequest(images=[], features=features)
     vision_workflow = {
     "enabled": True,
     "width_min_threshold": 200,

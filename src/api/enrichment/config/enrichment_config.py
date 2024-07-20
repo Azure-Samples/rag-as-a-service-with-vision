@@ -19,9 +19,9 @@ class EnrichmentConfig(object):
     _cosmos_db_name: str
 
     def __init__(self):
-        self._azure_gpt_4v_api_version = os.environ.get("AZURE_GPT_4V_API_VERSION")
-        self._azure_gpt_4v_api_key = os.environ.get("AZURE_GPT_4V_API_KEY")
-        self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_GPT_4V_API_ENDPOINT")
+        self._azure_gpt_4v_api_version = os.environ.get("OPENAI_API_VERSION")
+        self._azure_gpt_4v_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+        self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
         self._azure_gpt_4v_model = os.environ.get("AZURE_GPT_4V_MODEL")
 
         self._azure_computer_vision_endpoint = os.environ.get("AZURE_COMPUTER_VISION_ENDPOINT")
@@ -36,40 +36,40 @@ class EnrichmentConfig(object):
     @property
     def gpt_4v_endpoint(self) -> str:
         if not self._azure_gpt_4v_api_endpoint:
-            self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_GPT_4V_API_ENDPOINT")
+            self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
 
             if not self._azure_gpt_4v_api_endpoint:
-                raise ValueError("AZURE_GPT_4V_API_ENDPOINT is not defined")
+                raise ValueError("AZURE_OPENAI_ENDPOINT is not defined")
         
         return self._azure_gpt_4v_api_endpoint
-    
+
     @property
     def gpt_4v_key(self) -> str:
         if not self._azure_gpt_4v_api_key:
-            self._azure_gpt_4v_api_key = os.environ.get("AZURE_GPT_4V_API_KEY")
+            self._azure_gpt_4v_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
             if not self._azure_gpt_4v_api_key:
-                raise ValueError("AZURE_GPT_4V_API_KEY is not defined")
+                raise ValueError("AZURE_OPENAI_API_KEY is not defined")
         
         return self._azure_gpt_4v_api_key
-    
+
     @property
     def gpt_4v_api_version(self) -> str:
         if not self._azure_gpt_4v_api_version:
-            self._azure_gpt_4v_api_version = os.environ.get("AZURE_GPT_4V_API_VERSION")
+            self._azure_gpt_4v_api_version = os.environ.get("OPENAI_API_VERSION")
 
             if not self._azure_gpt_4v_api_version:
-                raise ValueError("AZURE_GPT_4V_API_VERSION is not defined")
+                raise ValueError("OPENAI_API_VERSION is not defined")
         
         return self._azure_gpt_4v_api_version
     
     @property
     def gpt_4v_model(self) -> str:
         if not self._azure_gpt_4v_model:
-            self._azure_gpt_4v_model = os.environ.get("AZURE_GPT_4V_MODEL")
+            self._azure_gpt_4v_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
 
             if not self._azure_gpt_4v_model:
-                raise ValueError("AZURE_GPT_4V_MODEL is not defined")
+                raise ValueError("AZURE_MLLM_DEPLOYMENT_MODEL is not defined")
         
         return self._azure_gpt_4v_model
 

@@ -1,4 +1,6 @@
 from importlib import import_module
+from pathlib import Path
+from typing import Union
 from loguru import logger
 
 from models.rag_config import LoaderConfig, MediaEnrichmentRequest
@@ -19,6 +21,7 @@ class VisionLoaderManager(object):
     def initialize_vision_loader(
         self,
         loader_config: LoaderConfig,
+        file_path: Union[str, Path],
         media_enrichment: MediaEnrichmentRequest
     ):
         loader: BaseLoader
@@ -28,6 +31,7 @@ class VisionLoaderManager(object):
             logger.error(f"Error initializing vision loader: {e}")
             raise
         return loader(
+            file_path=file_path,
             media_enrichment=media_enrichment.dict(),
             **loader_config.loader_kwargs
         )
@@ -38,3 +42,5 @@ class VisionLoaderManager(object):
             loader_config.loader_name
         )
         return loader
+    
+vision_loader_manager = VisionLoaderManager()
