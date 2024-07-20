@@ -34,8 +34,7 @@ class AzureMllmService:
 
         print(completion.choices[0].message.content.strip())
 
-        # TODO Include grounding
-        return GeneratedResponse(content=completion.choices[0].message.content.strip(), grounding_spans=None)
+        return GeneratedResponse(content=completion.choices[0].message.content.strip())
 
 
     def sync_chat(self, images: list[str], prompt: str, kwargs: dict, detail_mode: str) -> GeneratedResponse: 

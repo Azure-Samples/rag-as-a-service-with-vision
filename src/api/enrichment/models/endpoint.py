@@ -28,7 +28,6 @@ class MediaEnrichmentRequest(BaseModel):
 
 class GeneratedResponse(BaseModel):
     content: str
-    grounding_spans: Optional[list[dict]]
 
 class MediaEnrichmentResponse(BaseModel):
     generated_response: Optional[GeneratedResponse]
