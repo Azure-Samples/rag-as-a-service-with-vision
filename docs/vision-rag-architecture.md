@@ -30,9 +30,7 @@ To address this use case, it makes sense to incorporate a **multimodal LLM**, su
 
 #### Caching
 
-### Inference workflow
-
-TODO: insert full system diagram for inference flow based on user query (query -> search -> formulate context -> chat)
+### Document ingestion workflow
 
 #### Document loader
 
@@ -44,5 +42,9 @@ TODO: Include context from MHTMLLoaderWithVision design doc
 #### Document splitter
 
 TODO: Include context from RecursiveSplitterWithImage design doc
+
+### Inference workflow
+
+TODO: insert full system diagram for inference flow based on user query (query -> search -> formulate context -> chat)
 
 ### Maybe - API endpoints?
