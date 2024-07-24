@@ -70,6 +70,32 @@ The classifier requires a `threshold`, which represents the confidence score we 
 
 #### Caching
 
+Enrichment is a very cost-full operation and it is important to avoid redundant calls to the Enrichment Service.
+
+GPT Vision has three modes for its detail level: `low`, `high`, and `auto` (default). The cost of the service is different for each mode. For `low` mode, the cost of the service is 85 tokens per image regardless what is the image resolution. For the `high` resolution mode, it depends on the size of image. For example, if the image size is 4096 x 8192, the cost will be 1105 tokens. In this mode, GPT uses a hierarchical bird approach to adjust the image resolution and tile it for a better detailed output. The images with resolution higher than 512 x 512 are considered high resolution images.
+ 
+In terms of latency, it depends on the size and resolution of images and the number of services that are being called, the latency of the service can be high from 6s to 1 min. For example, the latency of the service for a 4096 x 8192 image can be up to one minute. It means ingestion of a document with 10 images can take up to 10 minutes without parallelization.
+
+To avoid redundant calls in the Enrichment Service to underlying services including GPT and image analysis services, a cache can be used to store the results of the enrichment service to reduce the cost (almost zero if the result is cached for all consequent enrichment calls and Azure Cosmos DB used as a cache) and latency of the service.
+
+The cache uses Azure Cosmos Db for caching the results of the Enrichment Service.
+
+The cache will be a key/value store with an expiry date that will be refreshed anytime that the key is accessed. The key will be generated from the input of the enrichment service and the value will be the result of the enrichment service. The expiry date will be set based on the configuration of the enrichment service. For example, the request will be with an additional field named `expiry` in the time span format as below:
+
+```json
+    "cache": {
+        "enabled": true,
+        "expiry": "DD:HH:MM:SS",
+        "key_format": "{hash}",
+    },
+```
+
+- Key: It will be generated from the input of the Enrichment Service using SHA-256 algorithm in the format `{domain}-{version}-{hash of the images and features}`. This format ensures that any change in the content of the image or the settings in `features`, including prompt and enhancement flags, will generate a new key/value. The old key/value will be expired based on the expiry date.
+ 
+- Value: It will be the result of the Enrichment Service, including the Computer Vision and OpenAI services.
+ 
+- Eviction Policy: It will be set based on the expiry date of the key/value. The expiry date will be refreshed anytime the key is accessed. In Azure Cosmos DB, the expiry date needs to be updated manually in the application code using the TTL feature of Azure Cosmos DB or by using a custom field for the `expiry` and an `index` on this field in the document.
+
 ### Document ingestion workflow
 
 #### Document loader
