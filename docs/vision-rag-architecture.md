@@ -22,11 +22,51 @@ To address this use case, it makes sense to incorporate a **multimodal LLM**, su
 
 ### Enrichment workflow
 
+Enrichment is a service integrated with Azure AI Services, including Computer Vision and OpenAI Services. It has three main features: Multimodal LLM, Classifier and Caching.
+
 ![Enrichment service workflow](./assets/enrichment-flow.drawio.png)
+
+### RAG Config Sample
+
+RAG config sample that uses all the enrichment features:
+
+```json
+    "media_enrichment": {
+        "features": {
+            "mllm": {
+                "enabled": true,
+                "prompt": "Be a helpful assistant and answer anything!",
+                "llm_kwargs": {},
+                "model": "gpt-4o",
+                "detail_mode": "auto"
+            },
+            "classifier": {
+                "enabled": true,
+                "threshold": 0.8
+            },
+            "cache": {
+                "enabled": true,
+                "expiry": null,
+                "key_format": "2024-07-22-{hash}"
+            }
+        }
+    }
+```
 
 #### Multimodal LLM usage
 
 #### Classifier
+
+The classifier helps reducing the number of calls made to GPT Vision, thereby decreasing latency and costs.
+
+The classifier analyzes images using Azure Computer Vision Tags to categorize them based on their content. It follows a set of rules to determine the appropriate action for each image:
+ 
+- Ignore Category: If the image does not contain any tags, or if it is an image without text or a logo, it is categorized as "IGNORE". These images are considered irrelevant for further processing.
+ 
+- GPT Vision Category: If the image contains text and keywords related to diagrams, designs, software, or websites, it is categorized as "GPT VISION". These images are suitable for further processing with GPT Vision to extract additional information.
+
+The classifier requires a `threshold`, which represents the confidence score we want to consider for the provided tags. By setting a specific threshold, we filter out tags with confidence scores below that level, ensuring that only reliable predictions are retained. The value ranges between 0 and 1.
+
 
 #### Caching
 
