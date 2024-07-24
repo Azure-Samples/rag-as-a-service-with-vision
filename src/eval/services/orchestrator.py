@@ -177,7 +177,7 @@ class Orchestrator(object):
             os.path.dirname(__file__),
             "..",
             "output",
-            "experiment-results",
+            "evaluation_results",
             experiment_id
         )
 
