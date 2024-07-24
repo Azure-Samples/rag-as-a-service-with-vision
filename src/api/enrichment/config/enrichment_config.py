@@ -17,12 +17,13 @@ class EnrichmentConfig(object):
     _col_enrichment_cache: str
     _enrichment_cache_max_expiry_in_sec: int
     _cosmos_db_name: str
+    _cosmos_collection_name: str
 
     def __init__(self):
         self._azure_gpt_4v_api_version = os.environ.get("OPENAI_API_VERSION")
         self._azure_gpt_4v_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
         self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-        self._azure_gpt_4v_model = os.environ.get("AZURE_GPT_4V_MODEL")
+        self._azure_gpt_4v_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
 
         self._azure_computer_vision_endpoint = os.environ.get("AZURE_COMPUTER_VISION_ENDPOINT")
         self._azure_computer_vision_key = os.environ.get("AZURE_COMPUTER_VISION_KEY")
@@ -32,6 +33,7 @@ class EnrichmentConfig(object):
         self._col_enrichment_cache = None
         self._cosmos_db_uri = None
         self._cosmos_db_name = None
+        self._cosmos_collection_name = None
 
     @property
     def gpt_4v_endpoint(self) -> str:
@@ -123,9 +125,9 @@ class EnrichmentConfig(object):
 
             if not self._cosmos_db_uri:
                 raise ValueError("COSMOS_DB_URI is not defined.")
-            
+
         return self._cosmos_db_uri
-    
+
     @property
     def cosmos_db_name(self) -> str:
         if not self._cosmos_db_name:
@@ -133,10 +135,18 @@ class EnrichmentConfig(object):
 
             if not self._cosmos_db_name:
                 raise ValueError("DB_NAME is not defined.")
-            
+
         return self._cosmos_db_name
 
-    
+    @property
+    def cosmos_collection_name(self) -> str:
+        if not self._cosmos_collection_name:
+            self._cosmos_collection_name = os.environ.get("COLLECTION_NAME")
+
+            if not self._cosmos_collection_name:
+                raise ValueError("COLLECTION_NAME is not defined.")
+
+        return self._cosmos_collection_name
 
     '''
     NOTE: Classifier config is kept internal for now.

@@ -2,7 +2,7 @@ import hashlib
 import json
 from fastapi.encoders import jsonable_encoder
 from enrichment.models.endpoint import MediaEnrichmentRequest
-from .mongodb_keyvalue_cache import get_mongodb_cache
+from .mongodb_keyvalue_cache import get_cosmosdb_cache
 
 class CachingService:
     """
@@ -51,7 +51,7 @@ class CachingService:
         """
         key = CachingService._generate_key(req)
 
-        return get_mongodb_cache().get(key)
+        return get_cosmosdb_cache().get(key)
     
     @staticmethod
     def set(req: MediaEnrichmentRequest, response):
@@ -62,4 +62,4 @@ class CachingService:
 
         expiry = req.features.cache.expiry
 
-        return get_mongodb_cache().set(key, jsonable_encoder(response), expiry)
+        return get_cosmosdb_cache().set(key, jsonable_encoder(response), expiry)
