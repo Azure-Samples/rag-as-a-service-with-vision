@@ -120,7 +120,7 @@ class BaseVisionLoader(BaseLoader):
                         image_collection_new = {}
                         image_annotation_list = []
 
-                        # image_map contains all the images and their descirption if image is processed by GPT4V
+                        # image_map contains all the images and their descirption if image is processed by MLLM
                         start_time = timer()
                         batch_size = self.determine_batch_size(len(image_collection))
 

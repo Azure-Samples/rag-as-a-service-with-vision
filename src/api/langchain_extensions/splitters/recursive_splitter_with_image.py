@@ -153,35 +153,3 @@ def _get_args():
 
     args = parser.parse_args()
     return args
-
-if __name__ == "__main__":
-    from loaders.mhtml_loader_with_vision import MHTMLLoaderWithVision
-    from models.data.endpoint import MediaEnrichment, Features, Classifier, GPT4V, Cache
-
-    # Add args parser
-    args = _get_args()
-
-    # Call the loader class here
-    features = Features(cache=Cache(enabled=True, key_format="2024-04-17-{hash}", expiry=None), classifier=Classifier(enabled=False, threshold=0.0), gpt4v=GPT4V(enabled=True, prompt="You are an assistant whose job is to provide the explanation of images which is going to be used to retrieve the images.      Follow the below instructions: \n        - If the image contains any bubble tip then explain ONLY the bubble tip. \n        - If the image is an equipment diagram then explain all of the equipment and their connections in detail. \n        - If the image contains a table, try to extract the information in a structured way \n        - If the image device or product, try to describe that device with all the details related to shape and text on the device \n        - If the image contains screenshot, try to explain the highlighted steps. Ignore the exact text in the image if it is just an example for the steps and focus on the steps \n        - Otherwise, explain comprehensively the most important items with all the details on the image.", llm_kwargs={'temperature': 0, 'max_tokens': 2000, 'enhancements': {'ocr': {'enabled':True}, 'grounding':{'enabled':True}}}, detail_mode="auto"))
-    enrichment = MediaEnrichment(domain="user_of5253", config_version="2024-04-17-fieldops-classifier-threshold-8", images=[], features=features)
-
-    loader = MHTMLLoaderWithVision(
-        file_path=args.mhtml_path,
-        separate_docs_for_images=True,
-        media_enrichment=enrichment
-    )
-
-    docs = loader.load()
-    print(f'{len(docs)} MHTML documents loaded')
-    print(docs[0].page_content) # Test
-    print("\n")
-
-    # Call the splitter class here
-    splitter = RecursiveSplitterWithImage(chunk_size=1500, chunk_overlap=500, image_collection_in_metadata=True)
-    print(f"MHTML Splitter initialized with chunk size {splitter._chunk_size} and overlap {splitter._chunk_overlap}")
-
-    split_docs = splitter.split_documents(docs)
-    for i, doc in enumerate(split_docs):
-        print(f"Chunk {i} content:\n")
-        print(doc.page_content)
-        print("\n")

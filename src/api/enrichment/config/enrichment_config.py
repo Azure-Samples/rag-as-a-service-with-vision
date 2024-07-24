@@ -139,7 +139,7 @@ class EnrichmentConfig(object):
     
 
     '''
-    NOTE: Classifier config is kept internal for now. It can be extended later to be at domain services level if there is a need.
+    NOTE: Classifier config is kept internal for now.
     '''
     @property
     def classifier_config_data(self):

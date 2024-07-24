@@ -266,33 +266,3 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-
-if __name__ == "__main__":
-    from enrichment.models.endpoint import Cache, Classifier, GPT4V, Features
-    args = get_args()
-
-    prompt = "You are an assistant whose job is to provide the explanation of images which is going to be used to retrieve the images."
-    features = Features(cache=Cache(enabled=False), classifier=Classifier(enabled=True, threshold=0.8), gpt4v=GPT4V(enabled=True, prompt=prompt, llm_kwargs={"max_tokens": 800}))
-    enrichment = MediaEnrichmentRequest(images=[], features=features)
-    vision_workflow = {
-    "enabled": True,
-    "width_min_threshold": 200,
-    "height_min_threshold": 100
-    }
-
-    loader = MHTMLLoaderWithVision(
-        file_path=args.file_path,
-        separate_docs_for_images=args.separate_docs_for_images,
-        media_enrichment=enrichment,
-        vision_workflow=vision_workflow,
-        surrounding_text_end=100,
-        surrounding_text_start=100
-    )
-
-    docs = loader.load()
-    for index, doc in enumerate(docs):
-        with open('loaders/doc-' + str(index) + ".html", 'w') as file:
-            file.write(doc.page_content)
-            file.write("\n Metadata below:\n")
-            for key, value in doc.metadata.items():
-                file.write(f"{key}: {value}\n")

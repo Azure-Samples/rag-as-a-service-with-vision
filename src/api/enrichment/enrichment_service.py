@@ -38,10 +38,10 @@ class EnrichmentService:
                 error = e.json_body["error"]["message"]
             else:
                 error = e.user_message
-            log.error(f"Exception occurred in GPT4V module, exception details - {e}")
-            raise CustomServiceException(error, "GPT4V module", e.http_status)
+            log.error(f"Exception occurred in MLLM module, exception details - {e}")
+            raise CustomServiceException(error, "MLLM module", e.http_status)
         except Exception as e:
-            log.error(f"Generic Exception occurred in GPT4V module, exception details - {e}")
+            log.error(f"Generic Exception occurred in MLLM module, exception details - {e}")
             raise
 
     async def _async_get_classifier_result(self, req: MediaEnrichmentRequest):
@@ -88,7 +88,7 @@ class EnrichmentService:
         return req.features and req.features.classifier and req.features.classifier.enabled
 
     def _is_gpt4v_enabled(self, req: MediaEnrichmentRequest):
-        return req.features and req.features.gpt4v and req.features.gpt4v.enabled
+        return req.features and req.features.mllm and req.features.mllm.enabled
 
     async def async_get_media_enrichment_result(self, req: MediaEnrichmentRequest):
         try:
