@@ -7,12 +7,10 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import TextSplitter
-
-# TOOO: Reorganize imports
-from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import AzureChatOpenAI
 from loguru import logger
 from typing import Annotated, Optional
 
