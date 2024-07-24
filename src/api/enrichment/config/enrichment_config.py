@@ -32,6 +32,7 @@ class EnrichmentConfig(object):
         self._enrichment_cache_max_expiry_in_sec = None
         self._col_enrichment_cache = None
         self._cosmos_db_uri = None
+        self._cosmos_db_key = None
         self._cosmos_db_name = None
         self._cosmos_collection_name = None
 
@@ -121,30 +122,40 @@ class EnrichmentConfig(object):
     @property
     def cosmos_db_uri(self) -> str:
         if not self._cosmos_db_uri:
-            self._cosmos_db_uri = os.environ.get("COSMOS_DB_URI")
+            self._cosmos_db_uri = os.environ.get("AZURE_COSMOS_DB_URI")
 
             if not self._cosmos_db_uri:
-                raise ValueError("COSMOS_DB_URI is not defined.")
+                raise ValueError("AZURE_COSMOS_DB_URI is not defined.")
 
         return self._cosmos_db_uri
 
     @property
+    def cosmos_db_key(self) -> str:
+        if not self._cosmos_db_uri:
+            self._cosmos_db_key = os.environ.get("AZURE_COSMOS_DB_KEY")
+
+            if not self._cosmos_db_key:
+                raise ValueError("AZURE_COSMOS_DB_KEY is not defined.")
+
+        return self._cosmos_db_key
+
+    @property
     def cosmos_db_name(self) -> str:
         if not self._cosmos_db_name:
-            self._cosmos_db_name = os.environ.get("DB_NAME")
+            self._cosmos_db_name = os.environ.get("AZURE_COSMOS_DB_DATABASE")
 
             if not self._cosmos_db_name:
-                raise ValueError("DB_NAME is not defined.")
+                raise ValueError("AZURE_COSMOS_DB_DATABASE is not defined.")
 
         return self._cosmos_db_name
 
     @property
     def cosmos_collection_name(self) -> str:
         if not self._cosmos_collection_name:
-            self._cosmos_collection_name = os.environ.get("COLLECTION_NAME")
+            self._cosmos_collection_name = os.environ.get("AZURE_COSMOS_DB_ENRICHMENT_CONTAINER")
 
             if not self._cosmos_collection_name:
-                raise ValueError("COLLECTION_NAME is not defined.")
+                raise ValueError("AZURE_COSMOS_DB_ENRICHMENT_CONTAINER is not defined.")
 
         return self._cosmos_collection_name
 

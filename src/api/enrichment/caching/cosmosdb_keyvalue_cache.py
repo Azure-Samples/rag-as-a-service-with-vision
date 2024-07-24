@@ -11,8 +11,8 @@ class CosmosDbKeyValueCache:
     """
     _container: ContainerProxy
 
-    def __init__(self, cosmos_uri: str, db_name: str, container: str):
-        cosmos_client = CosmosClient(cosmos_uri)
+    def __init__(self, cosmos_uri: str, cosmos_key: str, db_name: str, container: str):
+        cosmos_client = CosmosClient(cosmos_uri, cosmos_key)
 
         database = cosmos_client.create_database_if_not_exists(db_name)
         try:
@@ -65,7 +65,7 @@ def get_cosmosdb_cache(enrichment_config: EnrichmentConfig = enrichment_config):
     if _cache:
         return _cache
 
-    _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, enrichment_config.cosmos_db_name , enrichment_config.cosmos_collection_name)
+    _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, enrichment_config.cosmos_db_key, enrichment_config.cosmos_db_name , enrichment_config.cosmos_collection_name)
     return _cache
 
 if __name__ == '__main__':
