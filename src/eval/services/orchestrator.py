@@ -3,6 +3,7 @@ import json
 from loguru import logger as log
 import pandas as pd
 from tqdm import tqdm
+from uuid import uuid4
 
 from .api_request_manager import ApiRequestManager
 from .evaluators.gpt_evaluator import GptEvaluator
@@ -139,6 +140,9 @@ class Orchestrator(object):
         expected_answer_column_name: str,
         skip_ingest: bool
     ):
+        experiment_id = str(uuid4())
+        log.info(f"Starting experiment {experiment_id}...")
+
         ground_truth_dataset_path = os.path.join(dataset_path, DataFolderConfig.GROUND_TRUTH_DATASET_FILE_NAME)
         config_path = os.path.join(dataset_path, DataFolderConfig.CONFIG_FILE_NAME)
         raw_documents_path = os.path.join(dataset_path, DataFolderConfig.RAW_DOCUMENTS_FOLDER_NAME)
@@ -169,4 +173,18 @@ class Orchestrator(object):
         self._evaluate_search(dataset, expected_answer_column_name)
         self._evaluate_chat(dataset,expected_answer_column_name, question_column_name)
 
-        dataset.to_csv("sample.csv") # todo: update how this is saved
+        output_dir = os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            "output",
+            "experiment-results",
+            experiment_id
+        )
+
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, "results.csv")
+        config_path = os.path.join(output_dir, "config.json")
+
+        dataset.to_csv(output_path)
+        with open(config_path, "w") as f:
+            json.dump(config, f)
