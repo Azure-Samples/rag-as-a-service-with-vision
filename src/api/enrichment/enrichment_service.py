@@ -107,7 +107,7 @@ class EnrichmentService:
             if self._is_classifier_enabled(req):
                 classifier_result = await self._async_get_classifier_result(req)
                 classifier_result_name = classifier_result.name
-                if classifier_result == Category.GPT4_VISION:
+                if classifier_result == Category.GPT_VISION:
                     generated_response = await self._async_get_generated_answer(req)
             else:
                 generated_response = await self._async_get_generated_answer(req)
