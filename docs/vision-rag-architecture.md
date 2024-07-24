@@ -53,7 +53,14 @@ RAG config sample that uses all the enrichment features:
     }
 ```
 
-#### Multimodal LLM usage
+#### Multimodal LLM
+
+The multimodal LLM is a model with vision features to understand the content of images. Examples of models are GPT-4v or GPT-4o, which need to be specified in the `model` field.
+
+The MLLM also requires a `prompt`, which is specific for image summarization and different from the one used at inferencing time.
+
+You can complement other LLM arguments by using `llm_kwargs`, such as temperature or max tokens.
+
 
 #### Classifier
 
@@ -70,7 +77,7 @@ The classifier requires a `threshold`, which represents the confidence score we 
 
 #### Caching
 
-Enrichment is a very cost-full operation and it is important to avoid redundant calls to the Enrichment Service.
+Enrichment is a cost-full operation and it is important to avoid redundant calls to the Enrichment Service.
 
 GPT Vision has three modes for its detail level: `low`, `high`, and `auto` (default). The cost of the service is different for each mode. For `low` mode, the cost of the service is 85 tokens per image regardless what is the image resolution. For the `high` resolution mode, it depends on the size of image. For example, if the image size is 4096 x 8192, the cost will be 1105 tokens. In this mode, GPT uses a hierarchical bird approach to adjust the image resolution and tile it for a better detailed output. The images with resolution higher than 512 x 512 are considered high resolution images.
  
@@ -95,6 +102,7 @@ The cache will be a key/value store with an expiry date that will be refreshed a
 - Value: It will be the result of the Enrichment Service, including the Computer Vision and OpenAI services.
  
 - Eviction Policy: It will be set based on the expiry date of the key/value. The expiry date will be refreshed anytime the key is accessed. In Azure Cosmos DB, the expiry date needs to be updated manually in the application code using the TTL feature of Azure Cosmos DB or by using a custom field for the `expiry` and an `index` on this field in the document.
+
 
 ### Document ingestion workflow
 
