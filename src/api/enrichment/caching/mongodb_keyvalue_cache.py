@@ -7,7 +7,7 @@ from typing import Optional
 
 class MongoDbKeyValueCache:
     """
-    It encapsulates all required operations to work with Cosmos DB for MongoDB as a key/value cache.
+    It encapsulates all required operations to work with Cosmos DB as a key/value cache.
     """
 
     def __init__(self, mongo_uri, db_name, collection_name):
