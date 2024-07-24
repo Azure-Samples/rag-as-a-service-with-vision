@@ -15,8 +15,7 @@ from loguru import logger
 from typing import Annotated, Optional
 
 from enrichment.models.endpoint import MediaEnrichmentRequest
-from configs.config import config, Config
-from .config_manager import load_config
+from configs.config import Config
 from models.temp_file_reference import TempFileReference
 from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig, SearchConfig
 from .cosmos_config_manager import CosmosConfigManager
