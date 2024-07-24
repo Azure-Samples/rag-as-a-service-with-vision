@@ -6,11 +6,7 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from enrichment.enrichment_service import EnrichmentService
 from enrichment.models.endpoint import MediaEnrichmentRequest
-from fastapi import Depends
 from loguru import logger as log
-from fastapi.security import HTTPBearer
-from fastapi.security import HTTPAuthorizationCredentials
-from utility.auth import AuthenticationResponse, authenticate_user
 
 codebase_version = os.environ.get("CODEBASE_VERSION")
 
@@ -18,10 +14,9 @@ prefix = f"/{codebase_version}/enrichment-services"
 
 enrichment_services_route = APIRouter(prefix=prefix, tags=["services"])
 
-auth_scheme = HTTPBearer()
 
 @enrichment_services_route.post("/media-enrichment")
-async def media_enrichment(req: MediaEnrichmentRequest, token: HTTPAuthorizationCredentials = Depends(auth_scheme), authenticate_response: AuthenticationResponse = Depends(authenticate_user)):
+async def media_enrichment(req: MediaEnrichmentRequest):
     try:
         enrichment_service = EnrichmentService()
         resp = await enrichment_service.async_get_media_enrichment_result(req)
@@ -36,7 +31,7 @@ if __name__ == "__main__":
     enrichmentapp = FastAPI(title='Enrichment Services API',
                 docs_url=f"/{codebase_version}/enrichment-services/docs",
                 openapi_url=f"/{codebase_version}/enrichment-services/openapi.json")
-    
+
     enrichmentapp.include_router(enrichment_services_route)
 
     enrichmentapp.add_middleware(
