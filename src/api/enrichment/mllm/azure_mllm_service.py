@@ -32,8 +32,6 @@ class AzureMllmService:
             **kwargs
         )
 
-        print(completion.choices[0].message.content.strip())
-
         return GeneratedResponse(content=completion.choices[0].message.content.strip())
 
 
