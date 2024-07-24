@@ -1,5 +1,29 @@
 # Architecture: Vision RAG
 
+- [Architecture: Vision RAG](#architecture-vision-rag)
+  - [Problem statement](#problem-statement)
+    - [Considerations](#considerations)
+  - [System architecture](#system-architecture)
+    - [Enrichment workflow](#enrichment-workflow)
+    - [RAG Config Sample](#rag-config-sample)
+      - [Multimodal LLM](#multimodal-llm)
+      - [Classifier](#classifier)
+      - [Caching](#caching)
+    - [Document ingestion workflow](#document-ingestion-workflow)
+      - [Document loader](#document-loader)
+      - [Document splitter](#document-splitter)
+    - [Inference workflow](#inference-workflow)
+    - [API Endpoints](#api-endpoints)
+      - [Upload Documents \[POST /upload\]](#upload-documents-post-upload)
+      - [Search \[POST /search\]](#search-post-search)
+      - [Chat \[POST /chat\]](#chat-post-chat)
+      - [Media Enrichment \[POST /enrichment-services/media-enrichment\]](#media-enrichment-post-enrichment-servicesmedia-enrichment)
+        - [Input parameters](#input-parameters)
+        - [Input sample](#input-sample)
+        - [Output parameters](#output-parameters)
+        - [Output sample](#output-sample)
+
+
 ## Problem statement
 
 The [Retrieval-Augmented Generation architecture](https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview) has become more common with the advent of more mature generative AI models, giving users a way to ground LLM responses in data retrieved from some document store, typically a vector database.
@@ -121,4 +145,106 @@ TODO: Include context from RecursiveSplitterWithImage design doc
 
 TODO: insert full system diagram for inference flow based on user query (query -> search -> formulate context -> chat)
 
-### Maybe - API endpoints?
+### API Endpoints
+
+#### Upload Documents [POST /upload]
+
+TODO
+
+#### Search [POST /search]
+
+TODO
+
+#### Chat [POST /chat]
+
+TODO
+
+#### Media Enrichment [POST /enrichment-services/media-enrichment]
+
+##### Input parameters
+ 
+This endpoint accepts the following parameters to enrich images:
+ 
+- domain: The domain for which enrichment is requested.
+- config_version: The version of the configuration to be used.
+- images (up to 10): A list of image files to be processed by CHATGPT4 Vision. Classifier only considers the first image as it will be used only during ingestion.
+- feature sets: it will be a set of features including gpt4v, classifier and caching.
+    - cache
+        - enabled: A boolean flag indicating whether caching should be enabled.
+        - key_format: a string to format the generated keys using domain, config version and hash of the images and feature collection. For example, key_format can be set to `'{domain}-{config_version}-{hash}'`.
+        - expiry: a string in the format of `dd:HH:mm:ss` to provide an expiry time span in the document level. If it is not provided as a part of the request, the cached item will be expired based on the time specified in the index collection level.
+    - classifier:
+        - enabled: A boolean flag indicating whether the classifier should be used. Will be true for ingestion only for now.
+        - threshold: The threshold value represents the confidence score that we want to consider for the provided tags. By setting a specific threshold, we filter out tags with confidence scores below that level, ensuring that only reliable predictions are retained. The value ranges between 0 and 1.
+    - mllm:
+        - enabled: A boolean flag indicating whether GPT-4 variant is enabled.
+        - prompt: The system message prompt to be used.
+        - detail mode: it can set to `low`, `high` and `auto` by default. If you have any high resolution images (any image with any dimension higher than 512) and set the detail mode to `auto` or `high`, the cost and latency will be higher but gpt4v will provide a more detailed information.
+        - llm_kwargs:
+            - temperature: The temperature parameter for language model generation.
+            - max_tokens: The maximum number of tokens for language model output.
+
+ 
+##### Input sample
+ 
+```json
+{
+  "domain": "string",
+  "config_version": "string",
+  "images": [
+    "string"
+  ],
+  "features": {
+    "cache": {
+      "enabled": true
+    },
+    "classifier": {
+      "enabled": true,
+      "threshold": 0
+    },
+    "mllm": {
+      "enabled": true,
+      "prompt": "string",
+      "llm_kwargs": {
+        "temperature": 0,
+        "max_tokens": 3000,
+          "enhancements": {
+            "ocr": {
+              "enabled": false
+            },
+            "grounding": {
+              "enabled": false
+            }
+          }
+      }
+    }
+  }
+}
+```
+ 
+##### Output parameters
+ 
+The response from the endpoint is a `JSON` object that has the following format -
+ 
+- classifier_result: The category to which the first image is classified (if classifier is enabled). Otherwise, it will be None. If the category is "GPT VISION", then image description would be extracted.
+- generated_response: Text describing the image (if extracted using ChatGPT4 Vision model).
+ 
+##### Output sample
+ 
+```json
+{
+"generated_response": {
+    "content": "This image shows a collage of five men, each dressed in different styles of formal attire. From left to right:\n\n1. The first man is wearing a dark blue, polka-dotted suit with a white shirt and a dark tie. He is also wearing black dress shoes.\n\n2. The second man is dressed in a teal blue suit with a matching shirt and no tie. He has brown dress shoes.\n\n3. The third man is wearing a light grey, three-piece suit with a white shirt, a light grey vest, a dark tie, and a white pocket square. He is also wearing black dress shoes.\n\n4. The fourth man is in a black leather bomber jacket with red and green stripes on the cuffs, paired with black pants and black sneakers.\n\n5. The fifth man is wearing a black double-breasted suit with a black shirt and no tie. He has a tattoo on his right hand and is wearing black dress shoes.\n\nAll faces have been blurred out, making it impossible to identify the individuals."
+  },
+  "classifier_result": "GPT_VISION"
+}
+```
+ 
+Limitations of current enrichment service implementation
+ 
+1. **Image Enhancement Limitation**: During a chat session, enhancements can only be applied to a single image. Multiple images cannot be enhanced within a single chat call.
+1. **Maximum Input Image Size**: The largest allowable input image size is 20 MB.
+1. **Object Grounding in Enhancement API**: When using the enhancement API for object grounding, if duplicate objects are detected, a single bounding box and label will be generated for all duplicates, rather than separate ones for each.
+1. **Image Chat Restriction**: When uploading images in Azure OpenAI Studio or the API, there is a limit of 10 images per chat call. then image description would be extracted.
+- generated_response: Text describing the image (if extracted using ChatGPT4 Vision model).
+ 
