@@ -20,14 +20,14 @@ class AzureMllmService:
         messages.append({ "role": "user", "content": content })
 
         client = AzureOpenAI(
-            azure_endpoint = enrichment_config.gpt_4v_endpoint,
-            azure_deployment = enrichment_config.gpt_4v_model,
-            api_version = enrichment_config.gpt_4v_api_version,
-            api_key = enrichment_config.gpt_4v_key,
+            azure_endpoint = enrichment_config.mllm_endpoint,
+            azure_deployment = enrichment_config.mllm_model,
+            api_version = enrichment_config.mllm_api_version,
+            api_key = enrichment_config.mllm_key,
         )
 
         completion = client.chat.completions.create(
-            model = enrichment_config.gpt_4v_model,
+            model = enrichment_config.mllm_model,
             messages = messages,
             **kwargs
         )

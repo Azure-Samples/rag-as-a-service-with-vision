@@ -5,10 +5,10 @@ from enrichment.utils.files_util import json_file_load
 DEFAULT_TTL_FOR_CACHING = 30 * 24 * 60 * 60
 
 class EnrichmentConfig(object):
-    _azure_gpt_4v_api_version: str
-    _azure_gpt_4v_api_key: str
-    _azure_gpt_4v_api_endpoint: str
-    _azure_gpt_4v_model: str
+    _azure_mllm_api_version: str
+    _azure_mllm_api_key: str
+    _azure_mllm_api_endpoint: str
+    _azure_mllm_model: str
 
     _azure_computer_vision_endpoint: str
     _azure_computer_vision_key: str
@@ -20,10 +20,10 @@ class EnrichmentConfig(object):
     _cosmos_collection_name: str
 
     def __init__(self):
-        self._azure_gpt_4v_api_version = os.environ.get("OPENAI_API_VERSION")
-        self._azure_gpt_4v_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
-        self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-        self._azure_gpt_4v_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
+        self._azure_mllm_api_version = os.environ.get("OPENAI_API_VERSION")
+        self._azure_mllm_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+        self._azure_mllm_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+        self._azure_mllm_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
 
         self._azure_computer_vision_endpoint = os.environ.get("AZURE_COMPUTER_VISION_ENDPOINT")
         self._azure_computer_vision_key = os.environ.get("AZURE_COMPUTER_VISION_KEY")
@@ -36,44 +36,44 @@ class EnrichmentConfig(object):
         self._cosmos_collection_name = None
 
     @property
-    def gpt_4v_endpoint(self) -> str:
-        if not self._azure_gpt_4v_api_endpoint:
-            self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    def mllm_endpoint(self) -> str:
+        if not self._azure_mllm_api_endpoint:
+            self._azure_mllm_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
 
-            if not self._azure_gpt_4v_api_endpoint:
+            if not self._azure_mllm_api_endpoint:
                 raise ValueError("AZURE_OPENAI_ENDPOINT is not defined")
         
-        return self._azure_gpt_4v_api_endpoint
+        return self._azure_mllm_api_endpoint
 
     @property
-    def gpt_4v_key(self) -> str:
-        if not self._azure_gpt_4v_api_key:
-            self._azure_gpt_4v_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+    def mllm_key(self) -> str:
+        if not self._azure_mllm_api_key:
+            self._azure_mllm_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
-            if not self._azure_gpt_4v_api_key:
+            if not self._azure_mllm_api_key:
                 raise ValueError("AZURE_OPENAI_API_KEY is not defined")
         
-        return self._azure_gpt_4v_api_key
+        return self._azure_mllm_api_key
 
     @property
-    def gpt_4v_api_version(self) -> str:
-        if not self._azure_gpt_4v_api_version:
-            self._azure_gpt_4v_api_version = os.environ.get("OPENAI_API_VERSION")
+    def mllm_api_version(self) -> str:
+        if not self._azure_mllm_api_version:
+            self._azure_mllm_api_version = os.environ.get("OPENAI_API_VERSION")
 
-            if not self._azure_gpt_4v_api_version:
+            if not self._azure_mllm_api_version:
                 raise ValueError("OPENAI_API_VERSION is not defined")
         
-        return self._azure_gpt_4v_api_version
+        return self._azure_mllm_api_version
     
     @property
-    def gpt_4v_model(self) -> str:
-        if not self._azure_gpt_4v_model:
-            self._azure_gpt_4v_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
+    def mllm_model(self) -> str:
+        if not self._azure_mllm_model:
+            self._azure_mllm_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
 
-            if not self._azure_gpt_4v_model:
+            if not self._azure_mllm_model:
                 raise ValueError("AZURE_MLLM_DEPLOYMENT_MODEL is not defined")
         
-        return self._azure_gpt_4v_model
+        return self._azure_mllm_model
 
     @property
     def vision_endpoint(self) -> str:
