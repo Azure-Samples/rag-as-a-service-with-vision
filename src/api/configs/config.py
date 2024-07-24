@@ -25,7 +25,7 @@ class Config(object):
         self._validate_openai_variables()
 
     def _validate_openai_variables(self):
-        _OPENAI_VERSION_ENV_VAR = "OPENAI_API_VERSION"
+        _OPENAI_VERSION_ENV_VAR = "AZURE_OPENAI_API_VERSION"
         _OPENAI_ENDPOINT_ENV_VAR = "AZURE_OPENAI_ENDPOINT"
         _OPENAI_API_VERSION_ENV_VAR = "AZURE_OPENAI_API_KEY"
         _OPENAI_ENV_VARS = [
@@ -34,7 +34,7 @@ class Config(object):
             _OPENAI_API_VERSION_ENV_VAR,
         ]
 
-        openai_version = os.environ.get("OPENAI_API_VERSION")
+        openai_version = os.environ.get("AZURE_OPENAI_API_VERSION")
         openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
         openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
