@@ -14,9 +14,15 @@
       - [Document splitter](#document-splitter)
     - [Inference workflow](#inference-workflow)
     - [API Endpoints](#api-endpoints)
-      - [Upload Documents (POST /upload)](#upload-documents-post-upload)
+      - [Upload documents (POST /upload)](#upload-documents-post-upload)
+        - [Upload documents endpoint input](#upload-documents-endpoint-input)
+        - [Upload documents endpoint output](#upload-documents-endpoint-output)
       - [Search (POST /search)](#search-post-search)
+        - [Search endpoint input](#search-endpoint-input)
+        - [Search endpoint output](#search-endpoint-output)
       - [Chat (POST /chat)](#chat-post-chat)
+        - [Chat endpoint input](#chat-endpoint-input)
+        - [Chat endpoint output](#chat-endpoint-output)
       - [Media Enrichment (POST /enrichment-services/media-enrichment)](#media-enrichment-post-enrichment-servicesmedia-enrichment)
         - [Input parameters](#input-parameters)
         - [Input sample](#input-sample)
@@ -145,17 +151,28 @@ The above diagram is adapted from the [Azure documentation on on retrieval-augme
 
 ### API Endpoints
 
-#### Upload Documents (POST /upload)
+#### Upload documents (POST /upload)
 
-TODO
+##### Upload documents endpoint input
+
+##### Upload documents endpoint output
 
 #### Search (POST /search)
 
-TODO
+##### Search endpoint input
+
+##### Search endpoint output
 
 #### Chat (POST /chat)
 
-TODO
+##### Chat endpoint input
+
+The `/chat` endpoint requires the following fields in the input body:
+
+- `rag_config`: The configuration ID used for this RAG pipeline - sample [here](src/api/rag_configs/sample.json).
+- `query`: The user query that will be used as [input for the RAG pipeline](#inference-workflow)
+
+##### Chat endpoint output
 
 #### Media Enrichment (POST /enrichment-services/media-enrichment)
 
