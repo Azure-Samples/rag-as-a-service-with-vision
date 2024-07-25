@@ -16,7 +16,7 @@
 
 ## Overview
 
-This API facilitates the ingestion of data into a vector store and the retrieval of the content from the vector store to be used in a RAG-based flow.
+This RAG API facilitates the ingestion of data into a vector store and the retrieval of the content from the vector store to be used in a RAG-based flow.
 
 The API also allows domains to manage their configuration.
 
