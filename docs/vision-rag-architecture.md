@@ -14,10 +14,10 @@
       - [Document splitter](#document-splitter)
     - [Inference workflow](#inference-workflow)
     - [API Endpoints](#api-endpoints)
-      - [Upload Documents \[POST /upload\]](#upload-documents-post-upload)
-      - [Search \[POST /search\]](#search-post-search)
-      - [Chat \[POST /chat\]](#chat-post-chat)
-      - [Media Enrichment \[POST /enrichment-services/media-enrichment\]](#media-enrichment-post-enrichment-servicesmedia-enrichment)
+      - [Upload Documents (POST /upload)](#upload-documents-post-upload)
+      - [Search (POST /search)](#search-post-search)
+      - [Chat (POST /chat)](#chat-post-chat)
+      - [Media Enrichment (POST /enrichment-services/media-enrichment)](#media-enrichment-post-enrichment-servicesmedia-enrichment)
         - [Input parameters](#input-parameters)
         - [Input sample](#input-sample)
         - [Output parameters](#output-parameters)
@@ -82,7 +82,6 @@ The MLLM also requires a `prompt`, which is specific for image summarization and
 
 You can complement other LLM arguments by using `llm_kwargs`, such as temperature or max tokens.
 
-
 #### Classifier
 
 The classifier helps reducing the number of calls made to GPT Vision, thereby decreasing latency and costs.
@@ -94,7 +93,6 @@ The classifier analyzes images using Azure Computer Vision Tags to categorize th
 - GPT Vision Category: If the image contains text and keywords related to diagrams, designs, software, or websites, it is categorized as "GPT VISION". These images are suitable for further processing with GPT Vision to extract additional information.
 
 The classifier requires a `threshold`, which represents the confidence score we want to consider for the provided tags. By setting a specific threshold, we filter out tags with confidence scores below that level, ensuring that only reliable predictions are retained. The value ranges between 0 and 1.
-
 
 #### Caching
 
@@ -141,23 +139,25 @@ TODO: Include context from RecursiveSplitterWithImage design doc
 
 ### Inference workflow
 
-TODO: insert full system diagram for inference flow based on user query (query -> search -> formulate context -> chat)
+![Inference workflow](./assets/inference-flow.drawio.png)
+
+The above diagram is adapted from the [Azure documentation on on retrieval-augmented generation (RAG)](https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview).
 
 ### API Endpoints
 
-#### Upload Documents [POST /upload]
+#### Upload Documents (POST /upload)
 
 TODO
 
-#### Search [POST /search]
+#### Search (POST /search)
 
 TODO
 
-#### Chat [POST /chat]
+#### Chat (POST /chat)
 
 TODO
 
-#### Media Enrichment [POST /enrichment-services/media-enrichment]
+#### Media Enrichment (POST /enrichment-services/media-enrichment)
 
 ##### Input parameters
 
