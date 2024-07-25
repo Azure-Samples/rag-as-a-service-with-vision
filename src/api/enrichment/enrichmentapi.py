@@ -8,9 +8,7 @@ from enrichment.enrichment_service import EnrichmentService
 from enrichment.models.endpoint import MediaEnrichmentRequest
 from loguru import logger as log
 
-codebase_version = os.environ.get("CODEBASE_VERSION")
-
-prefix = f"/{codebase_version}/enrichment-services"
+prefix = f"/enrichment-services"
 
 enrichment_services_route = APIRouter(prefix=prefix, tags=["services"])
 
@@ -29,8 +27,8 @@ if __name__ == "__main__":
     import uvicorn
 
     enrichmentapp = FastAPI(title='Enrichment Services API',
-                docs_url=f"/{codebase_version}/enrichment-services/docs",
-                openapi_url=f"/{codebase_version}/enrichment-services/openapi.json")
+                docs_url=f"/enrichment-services/docs",
+                openapi_url=f"/enrichment-services/openapi.json")
 
     enrichmentapp.include_router(enrichment_services_route)
 
