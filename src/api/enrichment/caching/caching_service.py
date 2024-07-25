@@ -2,7 +2,7 @@ import hashlib
 import json
 from fastapi.encoders import jsonable_encoder
 from enrichment.models.endpoint import MediaEnrichmentRequest
-from .mongodb_keyvalue_cache import get_cosmosdb_cache
+from .cosmosdb_keyvalue_cache import get_cosmosdb_cache
 
 class CachingService:
     """
