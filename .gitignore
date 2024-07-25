@@ -396,3 +396,20 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# api files to ignore
+src/api/temp/**
+!src/api/temp/.gitkeep
+
+# eval output to ignore
+src/eval/output/**
+!src/eval/output/.gitkeep
