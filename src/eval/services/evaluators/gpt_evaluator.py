@@ -7,7 +7,7 @@ from config.gpt_eval_config import gpt_eval_config
 
 class GptEvaluator(BaseEvaluator[int]):
     def __init__(self):
-        self._evaluator = load_evaluator("labeled_score_string", llm=AzureChatOpenAI(azure_deployment=gpt_eval_config.azure_deployment))
+        self._evaluator = load_evaluator("labeled_score_string", llm=AzureChatOpenAI(azure_deployment=gpt_eval_config.azure_deployment, api_version=gpt_eval_config.openai_version))
 
 
     def evaluate(self, prediction: str, **kwargs):

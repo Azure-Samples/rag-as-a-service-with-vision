@@ -1,6 +1,6 @@
 
 import datetime
-from azure.cosmos import ContainerProxy, CosmosClient, exceptions
+from azure.cosmos import ContainerProxy, CosmosClient, exceptions, PartitionKey
 from enrichment.config.enrichment_config import EnrichmentConfig, enrichment_config
 from typing import Optional
 
@@ -16,9 +16,11 @@ class CosmosDbKeyValueCache:
 
         database = cosmos_client.create_database_if_not_exists(db_name)
         try:
-            self._container = database.create_container(container, partition_key="/id")
+            self._container = database.create_container(container, partition_key=PartitionKey(path="/id"))
         except exceptions.CosmosResourceExistsError:
             self._container = database.get_container_client(container)
+        except exceptions.CosmosHttpResponseError as e:
+            raise Exception(f"Error: {e}")
 
     def get(self, key: str):
         """
@@ -34,9 +36,9 @@ class CosmosDbKeyValueCache:
             doc = self._container.read_item(key, key)
             if doc:
                 value = doc['value']
-                self._container.replace_item(key, { 'accessedAt': datetime.datetime.now() })
+                self._container.replace_item(key, { 'id': key, 'accessedAt': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") })
                 return value
-        except exceptions.CosmosResourceNotFoundError:
+        except exceptions.CosmosResourceNotFoundError as e:
             return None
 
         return None
@@ -54,9 +56,9 @@ class CosmosDbKeyValueCache:
             days, hours, minutes, seconds = map(int, expiry.split(":"))
             ttl = ((days * 24 + hours ) * 60 + minutes) * 60 + seconds
 
-            self._container.upsert_item({'id': key, 'value': value, 'ttl': ttl, 'createdAt': datetime.datetime.now()})
+            self._container.upsert_item({'id': key, 'value': value, 'ttl': ttl, 'createdAt': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") })
         else:
-            self._container.upsert_item({'id': key, 'value': value, 'createdAt': datetime.datetime.now()})
+            self._container.upsert_item({'id': key, 'value': value, 'createdAt': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") })
 
 _cache: Optional[CosmosDbKeyValueCache] = None
 def get_cosmosdb_cache(enrichment_config: EnrichmentConfig = enrichment_config):

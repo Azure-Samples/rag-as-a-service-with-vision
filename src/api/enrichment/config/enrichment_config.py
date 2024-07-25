@@ -131,7 +131,7 @@ class EnrichmentConfig(object):
 
     @property
     def cosmos_db_key(self) -> str:
-        if not self._cosmos_db_uri:
+        if not self._cosmos_db_key:
             self._cosmos_db_key = os.environ.get("AZURE_COSMOS_DB_KEY")
 
             if not self._cosmos_db_key:

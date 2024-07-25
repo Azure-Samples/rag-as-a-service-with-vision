@@ -1,5 +1,4 @@
-from azure.cosmos import ContainerProxy, CosmosClient, exceptions
-from azure.identity import ClientSecretCredential, DefaultAzureCredential
+from azure.cosmos import ContainerProxy, CosmosClient, exceptions, PartitionKey
 
 from models.rag_config import RagConfig
 
@@ -15,7 +14,7 @@ class CosmosService(object):
         database = cosmos_client.create_database_if_not_exists(_DATABASE_NAME)
 
         try:
-            self._container = database.create_container(_CONTAINER_NAME, partition_key="/id")
+            self._container = database.create_container(_CONTAINER_NAME, partition_key=PartitionKey(path="/id"))
         except exceptions.CosmosResourceExistsError:
             self._container = database.get_container_client(_CONTAINER_NAME)
 

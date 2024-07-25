@@ -126,6 +126,7 @@ class RagOrchestrator(object):
         prompt = ChatPromptTemplate.from_template(config.chat_config.prompt_template)
         model = AzureChatOpenAI(
             azure_deployment=config.chat_config.azure_deployment,
+            api_version=self._config.openai_version,
             **config.chat_config.llm_kwargs
         )
 

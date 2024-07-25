@@ -26,16 +26,20 @@ class GptEvalConfig(object):
             _OPENAI_API_VERSION_ENV_VAR,
         ]
 
-        openai_version = os.environ.get("AZURE_OPENAI_API_VERSION")
-        openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-        openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+        self._openai_version = os.environ.get("AZURE_OPENAI_API_VERSION")
+        self._openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+        self._openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
-        if not (openai_version and openai_endpoint and openai_api_key):
+        if not (self._openai_version and self._openai_endpoint and self._openai_api_key):
             raise Exception(f"The following environment variables are required for openai: {', '.join(_OPENAI_ENV_VARS)}")
 
     @property
     def azure_deployment(self):
         return self._azure_deployment
+
+    @property
+    def openai_version(self):
+        return self._openai_version
 
 
 gpt_eval_config = GptEvalConfig()

@@ -37,9 +37,8 @@ class CachingService:
         }
 
         key = formatted_string.format(
-            domain = req.domain,
-            config_version = req.config_version,
-            hash = CachingService._generate_object_hash(hashing_object))
+            hash = CachingService._generate_object_hash(hashing_object)
+        )
 
         return key
 
