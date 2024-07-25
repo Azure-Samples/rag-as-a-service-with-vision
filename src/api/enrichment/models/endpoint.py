@@ -13,7 +13,7 @@ class Classifier(BaseModel):
 class Mllm(BaseModel):
     enabled: Optional[bool]
     prompt: str
-    llm_kwargs: dict
+    llm_kwargs: Optional[dict] = {}
     model: str
     detail_mode: Optional[Literal['low', 'high', 'auto']] = 'auto'
 
