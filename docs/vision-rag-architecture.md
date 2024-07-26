@@ -226,7 +226,7 @@ The `/upload` endpoint requires the following fields in the input body:
 
 ##### Upload documents endpoint output
 
-TODO
+On success, this endpoint returns HTTP status `204 No Content`.
 
 #### Search (POST /search)
 
