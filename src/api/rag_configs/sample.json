@@ -1,5 +1,6 @@
 {
     "id": "sample",
+    "name": "Sample RAG Config",
     "loader_config": {
         "loader_name": "TextLoader",
         "loader_kwargs": {}
@@ -24,5 +25,26 @@
             "api_version": "2023-12-01-preview",
             "deployment_name": "gpt-35-turbo"
         }
+    },
+    "media_enrichment": {
+        "features": {
+            "mllm": {
+                "enabled": true,
+                "prompt": "Be a helpful assistant and answer anything!",
+                "llm_kwargs": {},
+                "model": "gpt-4o",
+                "detail_mode": "auto"
+            },
+            "classifier": {
+                "enabled": true,
+                "threshold": 0.8
+            },
+            "cache": {
+                "enabled": true,
+                "expiry": null,
+                "key_format": "2024-07-22-{hash}"
+            }
+        },
+        "images": []
     }
 }

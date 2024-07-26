@@ -26,7 +26,7 @@ The API also allows domains to manage their configuration.
 
 The following configuration parameters need to be defined per the [`sample.env` file](src/api/configs/sample.env):
 
-- **OPENAI_API_VERSION** [REQUIRED]: The OpenAI API version.
+- **AZURE_OPENAI_API_VERSION** [REQUIRED]: The OpenAI API version.
 - **AZURE_OPENAI_API_KEY** [REQUIRED]: The OpenAI API key.
 - **AZURE_MLLM_DEPLOYMENT_MODEL** [REQUIRED]: The OpenAI multi-modal LLM model (i.e. GPT-4v, GPT 4o)
 

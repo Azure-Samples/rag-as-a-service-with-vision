@@ -237,9 +237,33 @@ The `/search` endpoint requires the following fields in the input body:
 - `rag_config`: The configuration ID used for this RAG pipeline - a sample of the full configuration file (of which the ID is the first field) can be seen [here](src/api/rag_configs/sample.json).
 - `query`: The user query that will be used as [input for the RAG pipeline](#inference-workflow)
 
+###### Search endpoint input sample
+
+```json
+{
+  "rag_config": "sample",
+  "query": "What's the meaning of life?"
+}
+```
+
 ##### Search endpoint output
 
-TODO
+The output of the `/search` endpoint is a list of JSON objects representing the top `k` (as specified in the JSON config file) chunks retrieved from the vector database from the documents previously ingested based on the specified RAG config, given a particular user query.
+
+###### Search endpoint output sample
+
+```json
+[
+  {
+    "page_content": "sample page content",
+    "metadata": {
+      "source": "/workspaces/experiment-framework-for-rag-apps/src/api/temp/sample/tmpuexquqv2/tmpyizwptw8"
+    },
+    "type": "Document"
+  },
+  ...
+]
+```
 
 #### Chat (POST /chat)
 
@@ -250,9 +274,18 @@ The `/chat` endpoint requires the following fields in the input body:
 - `rag_config`: The configuration ID used for this RAG pipeline - a sample of the full configuration file (of which the ID is the first field) can be seen [here](src/api/rag_configs/sample.json).
 - `query`: The user query that will be used as [input for the RAG pipeline](#inference-workflow)
 
+###### Chat endpoint input sample
+
+```json
+{
+  "rag_config": "sample",
+  "query": "What's the meaning of life?"
+}
+```
+
 ##### Chat endpoint output
 
-TODO
+The output of the `/chat` endpoint is just a string of the LLM response to the user query, based on the documents previously ingested for the specified `rag_config`, following the inference workflow described [above](#inference-workflow).
 
 #### Media Enrichment (POST /enrichment-services/media-enrichment)
 
