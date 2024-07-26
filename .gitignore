@@ -407,5 +407,9 @@ env.bak/
 venv.bak/
 
 # api files to ignore
-api/temp/**
-!api/temp/.gitkeep
+src/api/temp/**
+!src/api/temp/.gitkeep
+
+# eval output to ignore
+src/eval/output/**
+!src/eval/output/.gitkeep

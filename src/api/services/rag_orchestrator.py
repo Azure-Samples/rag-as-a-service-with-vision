@@ -7,18 +7,15 @@ from langchain_core.embeddings import Embeddings
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import TextSplitter
-
-# TOOO: Reorganize imports
-from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_openai import AzureChatOpenAI
 from loguru import logger
 from typing import Annotated, Optional
 
 from enrichment.models.endpoint import MediaEnrichmentRequest
-from configs.config import config, Config
-from .config_manager import load_config
+from configs.config import Config
 from models.temp_file_reference import TempFileReference
 from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig, SearchConfig
 from .cosmos_config_manager import CosmosConfigManager
@@ -129,6 +126,7 @@ class RagOrchestrator(object):
         prompt = ChatPromptTemplate.from_template(config.chat_config.prompt_template)
         model = AzureChatOpenAI(
             azure_deployment=config.chat_config.azure_deployment,
+            api_version=self._config.openai_version,
             **config.chat_config.llm_kwargs
         )
 

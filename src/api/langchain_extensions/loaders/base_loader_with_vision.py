@@ -17,6 +17,8 @@ from io import BytesIO
 from enrichment.enrichment_service import EnrichmentService
 from enrichment.models.endpoint import MediaEnrichmentRequest
 from timeit import default_timer as timer
+import nest_asyncio
+
 
 class BaseVisionLoader(BaseLoader):
 
@@ -120,10 +122,11 @@ class BaseVisionLoader(BaseLoader):
                         image_collection_new = {}
                         image_annotation_list = []
 
-                        # image_map contains all the images and their descirption if image is processed by GPT4V
+                        # image_map contains all the images and their descirption if image is processed by MLLM
                         start_time = timer()
                         batch_size = self.determine_batch_size(len(image_collection))
 
+                        nest_asyncio.apply()
                         image_map = asyncio.run(self.async_get_image_description_map(image_collection, self.media_enrichment, batch_size, content))
 
                         end_time = timer()

@@ -5,10 +5,10 @@ from enrichment.utils.files_util import json_file_load
 DEFAULT_TTL_FOR_CACHING = 30 * 24 * 60 * 60
 
 class EnrichmentConfig(object):
-    _azure_gpt_4v_api_version: str
-    _azure_gpt_4v_api_key: str
-    _azure_gpt_4v_api_endpoint: str
-    _azure_gpt_4v_model: str
+    _azure_mllm_api_version: str
+    _azure_mllm_api_key: str
+    _azure_mllm_api_endpoint: str
+    _azure_mllm_model: str
 
     _azure_computer_vision_endpoint: str
     _azure_computer_vision_key: str
@@ -17,12 +17,13 @@ class EnrichmentConfig(object):
     _col_enrichment_cache: str
     _enrichment_cache_max_expiry_in_sec: int
     _cosmos_db_name: str
+    _cosmos_collection_name: str
 
     def __init__(self):
-        self._azure_gpt_4v_api_version = os.environ.get("OPENAI_API_VERSION")
-        self._azure_gpt_4v_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
-        self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-        self._azure_gpt_4v_model = os.environ.get("AZURE_GPT_4V_MODEL")
+        self._azure_mllm_api_version = os.environ.get("OPENAI_API_VERSION")
+        self._azure_mllm_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+        self._azure_mllm_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+        self._azure_mllm_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
 
         self._azure_computer_vision_endpoint = os.environ.get("AZURE_COMPUTER_VISION_ENDPOINT")
         self._azure_computer_vision_key = os.environ.get("AZURE_COMPUTER_VISION_KEY")
@@ -31,47 +32,49 @@ class EnrichmentConfig(object):
         self._enrichment_cache_max_expiry_in_sec = None
         self._col_enrichment_cache = None
         self._cosmos_db_uri = None
+        self._cosmos_db_key = None
         self._cosmos_db_name = None
+        self._cosmos_collection_name = None
 
     @property
-    def gpt_4v_endpoint(self) -> str:
-        if not self._azure_gpt_4v_api_endpoint:
-            self._azure_gpt_4v_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    def mllm_endpoint(self) -> str:
+        if not self._azure_mllm_api_endpoint:
+            self._azure_mllm_api_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
 
-            if not self._azure_gpt_4v_api_endpoint:
+            if not self._azure_mllm_api_endpoint:
                 raise ValueError("AZURE_OPENAI_ENDPOINT is not defined")
         
-        return self._azure_gpt_4v_api_endpoint
+        return self._azure_mllm_api_endpoint
 
     @property
-    def gpt_4v_key(self) -> str:
-        if not self._azure_gpt_4v_api_key:
-            self._azure_gpt_4v_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+    def mllm_key(self) -> str:
+        if not self._azure_mllm_api_key:
+            self._azure_mllm_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
-            if not self._azure_gpt_4v_api_key:
+            if not self._azure_mllm_api_key:
                 raise ValueError("AZURE_OPENAI_API_KEY is not defined")
         
-        return self._azure_gpt_4v_api_key
+        return self._azure_mllm_api_key
 
     @property
-    def gpt_4v_api_version(self) -> str:
-        if not self._azure_gpt_4v_api_version:
-            self._azure_gpt_4v_api_version = os.environ.get("OPENAI_API_VERSION")
+    def mllm_api_version(self) -> str:
+        if not self._azure_mllm_api_version:
+            self._azure_mllm_api_version = os.environ.get("OPENAI_API_VERSION")
 
-            if not self._azure_gpt_4v_api_version:
+            if not self._azure_mllm_api_version:
                 raise ValueError("OPENAI_API_VERSION is not defined")
         
-        return self._azure_gpt_4v_api_version
+        return self._azure_mllm_api_version
     
     @property
-    def gpt_4v_model(self) -> str:
-        if not self._azure_gpt_4v_model:
-            self._azure_gpt_4v_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
+    def mllm_model(self) -> str:
+        if not self._azure_mllm_model:
+            self._azure_mllm_model = os.environ.get("AZURE_MLLM_DEPLOYMENT_MODEL")
 
-            if not self._azure_gpt_4v_model:
+            if not self._azure_mllm_model:
                 raise ValueError("AZURE_MLLM_DEPLOYMENT_MODEL is not defined")
         
-        return self._azure_gpt_4v_model
+        return self._azure_mllm_model
 
     @property
     def vision_endpoint(self) -> str:
@@ -119,27 +122,45 @@ class EnrichmentConfig(object):
     @property
     def cosmos_db_uri(self) -> str:
         if not self._cosmos_db_uri:
-            self._cosmos_db_uri = os.environ.get("COSMOS_DB_URI")
+            self._cosmos_db_uri = os.environ.get("AZURE_COSMOS_DB_URI")
 
             if not self._cosmos_db_uri:
-                raise ValueError("COSMOS_DB_URI is not defined.")
-            
+                raise ValueError("AZURE_COSMOS_DB_URI is not defined.")
+
         return self._cosmos_db_uri
-    
+
+    @property
+    def cosmos_db_key(self) -> str:
+        if not self._cosmos_db_key:
+            self._cosmos_db_key = os.environ.get("AZURE_COSMOS_DB_KEY")
+
+            if not self._cosmos_db_key:
+                raise ValueError("AZURE_COSMOS_DB_KEY is not defined.")
+
+        return self._cosmos_db_key
+
     @property
     def cosmos_db_name(self) -> str:
         if not self._cosmos_db_name:
-            self._cosmos_db_name = os.environ.get("DB_NAME")
+            self._cosmos_db_name = os.environ.get("AZURE_COSMOS_DB_DATABASE")
 
             if not self._cosmos_db_name:
-                raise ValueError("DB_NAME is not defined.")
-            
+                raise ValueError("AZURE_COSMOS_DB_DATABASE is not defined.")
+
         return self._cosmos_db_name
 
-    
+    @property
+    def cosmos_collection_name(self) -> str:
+        if not self._cosmos_collection_name:
+            self._cosmos_collection_name = os.environ.get("AZURE_COSMOS_DB_ENRICHMENT_CONTAINER")
+
+            if not self._cosmos_collection_name:
+                raise ValueError("AZURE_COSMOS_DB_ENRICHMENT_CONTAINER is not defined.")
+
+        return self._cosmos_collection_name
 
     '''
-    NOTE: Classifier config is kept internal for now. It can be extended later to be at domain services level if there is a need.
+    NOTE: Classifier config is kept internal for now.
     '''
     @property
     def classifier_config_data(self):

@@ -4,4 +4,4 @@ from enum import Enum
 
 class Category(Enum):
     IGNORE = 0
-    GPT4_VISION = 1
+    GPT_VISION = 1
