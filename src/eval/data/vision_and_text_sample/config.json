@@ -9,7 +9,8 @@
         "images": [],
         "features": {
             "cache": {
-                "enabled": false
+                "enabled": true,
+                "key_format": "example-{hash}"
             },
             "classifier": {
                 "enabled": false
