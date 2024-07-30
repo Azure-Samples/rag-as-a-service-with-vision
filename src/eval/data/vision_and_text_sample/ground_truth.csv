@@ -1,0 +1,11 @@
+id,question,answer
+1,What are the steps of the ingestion flow in RAG,"Chunk documents, enrich documents, embed chunks, and persist data"
+2,What types of datasets should exhaustive KNN be used for?,KNN may be used for small to medium datasets but not for large datasets.
+3,What are the 4 stages of query usage monitoring?,"onSearch, onResults, onNavigation, onSuccess"
+4,What are the inputs to the query parser?,Query text and analyzed terms
+5,What are the 2 different methods to evaluate search?,Offline and online evaluation
+6,How to query multiple indicies?,Need to issue same queries over multiple indices.
+7,What is the context in the LLM prompt?,"Original prompt, query context, and retrieved information"
+8,What are the stages of the inner loop workflow for llmops,"Data Curation, Experiment, Evaluate, Validate and Deploy, and Feedback and Data Collection"
+9,What are the stages of the outer loop workflow for llmops,"Validate and Deploy, Ingerence, Monitor, and Feedback and Data Collection"
+10,What llmops workflow does Feedback and Data Collection belong to?,Inner and outer loop
