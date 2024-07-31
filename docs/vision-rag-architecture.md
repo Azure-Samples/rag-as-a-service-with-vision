@@ -213,6 +213,8 @@ The splitter depends on the below configuration to generate the relevant chunks 
 
 The above diagram is adapted from the [Azure documentation on on retrieval-augmented generation (RAG)](https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview).
 
+For more information on the simple test harness provided in this repo and potential evaluation methods, see [this document](./evaluation.md).
+
 ### API Endpoints
 
 #### Upload documents (POST /upload)
