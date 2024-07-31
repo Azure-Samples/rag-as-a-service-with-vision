@@ -7,5 +7,5 @@ id,question,answer
 6,How to query multiple indicies?,Need to issue same queries over multiple indices.
 7,What is the context in the LLM prompt?,"Original prompt, query context, and retrieved information"
 8,What are the stages of the inner loop workflow for llmops,"Data Curation, Experiment, Evaluate, Validate and Deploy, and Feedback and Data Collection"
-9,What are the stages of the outer loop workflow for llmops,"Validate and Deploy, Ingerence, Monitor, and Feedback and Data Collection"
+9,What are the stages of the outer loop workflow for llmops,"Validate and Deploy, Inference, Monitor, and Feedback and Data Collection"
 10,What llmops workflow does Feedback and Data Collection belong to?,Inner and outer loop
