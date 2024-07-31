@@ -37,6 +37,7 @@ The following configuration parameters need to be defined per the [`sample.env` 
 - **AZURE_COSMOS_DB_KEY** [REQUIRED]: The CosmosDb key.
 - **AZURE_COSMOS_DB_DATABASE** [REQUIRED]: The CosmosDb database name.
 - **AZURE_COSMOS_DB_CONTAINER** [REQUIRED]: The CosmosDb container name.
+- **AZURE_COSMOS_DB_ENRICHMENT_CONTAINER** [REQUIRED]: The CosmosDB container for the enrichment cache
 
 - **AZURE_COMPUTER_VISION_ENDPOINT** [REQUIRED]: The Azure computer vision endpoint.
 - **AZURE_COMPUTER_VISION_KEY** [REQUIRED]: The Azure computer vision key.
