@@ -69,7 +69,7 @@ RAG config sample that uses all the enrichment features:
         "features": {
             "mllm": {
                 "enabled": true,
-                "prompt": "Be a helpful assistant and answer anything!",
+                "prompt": "You are an assistant whose job is provide detailed text descriptions of images which are going to be used to retrieve the images.",
                 "llm_kwargs": {},
                 "model": "gpt-4o",
                 "detail_mode": "auto"
@@ -115,7 +115,7 @@ The value can range between 0 and 1.
 
 #### Caching
 
-Enrichment is a cost-full operation and it is important to avoid redundant calls to the Enrichment Service.
+Enrichment is a costly operation, and it's important to try and avoid redundant calls to the Enrichment Service when possible.
 
 GPT Vision has three modes for its detail level: `low`, `high`, and `auto` (default).
 The cost of the service is different for each mode. For `low` mode, the cost of the service is 85 tokens per image regardless what is the image resolution.
@@ -339,14 +339,6 @@ This endpoint accepts the following parameters to enrich images:
       "llm_kwargs": {
         "temperature": 0,
         "max_tokens": 3000,
-          "enhancements": {
-            "ocr": {
-              "enabled": false
-            },
-            "grounding": {
-              "enabled": false
-            }
-          }
       }
     }
   }
