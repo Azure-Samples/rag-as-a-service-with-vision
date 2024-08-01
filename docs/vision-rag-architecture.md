@@ -121,7 +121,7 @@ GPT Vision has three modes for its detail level: `low`, `high`, and `auto` (defa
 The cost of the service is different for each mode. For `low` mode, the cost of the service is 85 tokens per image regardless what is the image resolution.
 For the `high` resolution mode, it depends on the size of image.
 For example, if the image size is 4096 x 8192, the cost will be 1105 tokens.
-In this mode, GPT uses a hierarchical bird approach to adjust the image resolution and tile it for a better detailed output.
+In this mode, GPT adjusts the image resolution and tiles it for a more detailed output.
 The images with resolution higher than 512 x 512 are considered high resolution images.
 
 In terms of latency, it depends on the size and resolution of images and the number of services that are being called, the latency of the service can be high from 6s to 1 min.
@@ -145,7 +145,7 @@ For example, the request will be with an additional field named `expiry` in the 
     },
 ```
 
-- Key: It will be generated from the input of the Enrichment Service using SHA-256 algorithm in the format `{domain}-{version}-{hash of the images and features}`.
+- Key: It will be generated from the input of the Enrichment Service using SHA-256 algorithm in the format `{hash of the images and features}`.
   This format ensures that any change in the content of the image or the settings in `features`, including prompt and enhancement flags, will generate a new key/value. The old key/value will be expired based on the expiry date.
 
 - Value: It will be the result of the Enrichment Service, including the Computer Vision and OpenAI services.
@@ -164,6 +164,10 @@ The MHTML loader is designed to process a specified MHTML file, producing a sequ
 It utilizes [the enrichment service](#enrichment-workflow) to retrieve descriptions for images contained in the file, if the necessary enrichment configuration is enabled, and insert those descriptions into the document using the [Markdown image annotation format](#image-annotation-format).
 The content is maintained in text format, leveraging the BeautifulSoup and quopri libraries for accurate preservation.
 The extracted document-level metadata includes the HTML file source information, `X-Metadata` header information, and image collection information if the enrichment service is enabled.
+In our use case, the `X-Metadata` header for the document contains a stringified JSON representation of the metadata available for the document in the internal document store -
+keys in this dictionary included the document ID, title, keywords, etc.
+This document-level metadata will be stored for each chunk when it's persisted to Azure AI Search.
+Note that this might vary depending on the source documents being used and any available metadata, with the goal of aiding in the knowledge retrieval component of the inference flow to search for the most relevant chunks for a given user query.
 
 Note that the `MHTMLLoaderWithVision` class inherits from the `BaseLoaderWithVision` class;
 the `BaseLoaderWithVision` class contains the logic for leveraging the enrichment service, and can be extended for future use for processing files in other document formats that contain image information, using the `MHTMLLoaderWithVision` implementation as a guide.
