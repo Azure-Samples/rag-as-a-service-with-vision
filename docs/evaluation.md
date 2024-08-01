@@ -1,4 +1,11 @@
-# RAG evaluation
+# RAG evaluation <!-- omit in toc -->
+
+- [Evaluation process](#evaluation-process)
+- [Available evaluation flows](#available-evaluation-flows)
+  - [ROUGE evaluation](#rouge-evaluation)
+  - [LLM-as-a-judge evaluation](#llm-as-a-judge-evaluation)
+- [Outer-loop feedback](#outer-loop-feedback)
+- [Additional resources](#additional-resources)
 
 Now that we've designed and implemented the [system architecture](vision-rag-architecture.md) for a RAG pipeline that leverages both textual and image data sources, we want to have a process to run the pipeline and evaluate its performance on a given set of documents and associated groundtruth question-and-answer evaluation dataset.
 This will enable iterative experimentation and fine-tuning of the pipeline to best meet the needs of end users.
