@@ -32,7 +32,7 @@ It then uses the resulting answers when running the evaluation flows to calculat
 
 ## Available evaluation flows
 
-Both evaluators described below inherit from the [`BaseEvaluator`](../src/eval/services/evaluators/base_evaluator.py) class.
+All evaluators described below inherit from the [`BaseEvaluator`](../src/eval/services/evaluators/base_evaluator.py) class.
 Additional evaluation functionality can be added using the ROUGE and GPT evaluators as a guide.
 
 ### ROUGE evaluation
