@@ -10,7 +10,6 @@ class GptEvaluator(BaseEvaluator[int]):
     def __init__(self):
         llm=AzureChatOpenAI(azure_deployment=gpt_eval_config.azure_deployment, api_version=gpt_eval_config.openai_version)
         fstring = """[Instruction]Please act as an impartial judge and evaluate the quality of the response provided by an AI assistant to the user question displayed below.
-                    ONLY evaluate the text answer component of the response; do NOT consider any image citations as part of your evaluation.
                     {criteria}
 
                     [Ground truth]
