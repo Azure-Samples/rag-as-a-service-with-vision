@@ -1,5 +1,4 @@
-# RAG Experiment Framework for RAG Apps
-
+# RAG with Vision Application Framework
 (short, 1-3 sentenced, description of the project)
 
 ## Features

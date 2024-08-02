@@ -6,6 +6,7 @@
   - [Enrichment workflow](#enrichment-workflow)
   - [RAG Config Sample](#rag-config-sample)
     - [Multimodal LLM](#multimodal-llm)
+      - [Cost and latency](#cost-and-latency)
     - [Classifier](#classifier)
     - [Caching](#caching)
   - [Document ingestion workflow](#document-ingestion-workflow)
@@ -50,7 +51,8 @@ This document provides an overview of the sample architecture presented in this 
   - At the time of development, GPT-4V was the only multimodal LLM available via Azure OpenAI, and latency/cost were high enough based on expected load on the system that we felt it would be better to explore the pattern of generating and querying text descriptions of images as opposed to direct inference against a multimodal LLM.
   However, as the technology develops, newer multimodal models may be released with cheaper pricing and lower latency, which may make the direct inference architecture more viable.
   - not all images in documents are relevant or contain useful information (e.g. business logo letterhead, etc.) - we propose using a classifier to identify images for which using the enrichment service to generate an image description would have most value
-- MHTML document format - for our use case, the document store we were considering was primarily HTML documents. HTML static content doesn't preserve the image data in the document, so we chose to convert the documents to MHTML format to ensure all required content was captured from the documents.
+- MHTML document format - for our use case, the document store we were considering was primarily HTML documents.
+  Some of the images in our use case required levels of authentication/authorization and our loader would need additional consideration to bypass that auth system when downloading the image content, so we chose to convert the documents to MHTML format prior to ingestion to ensure all text and image content was captured at their original locations in the document for ease of further processing.
 
 ## System architecture
 
@@ -96,6 +98,23 @@ The MLLM also requires a `prompt`, which is specific for image summarization and
 
 You can complement other LLM arguments by using `llm_kwargs`, such as temperature or max tokens.
 
+##### Cost and latency
+
+GPT Vision has [three modes](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#image-tokens-gpt-4-turbo-with-vision) for its detail level: `low`, `high`, and `auto` (default).
+The cost of the service is different for each mode.
+For `low` mode, the cost of the service is 85 tokens per image regardless what is the image resolution.
+For the `high` resolution mode, it depends on the size of image:
+for example, if the image size is 4096 x 8192, the cost will be 1105 tokens.
+In this mode, GPT adjusts the image resolution and tiles it for a more detailed output.
+Images with resolution higher than 512 x 512 are considered high resolution images.
+
+In terms of latency, it depends on the size and resolution of images and the number of services that are being called;
+the latency of the service can be high, ranging from 6s to 1 min.
+For example, the latency of the service for a 4096 x 8192 image can be up to one minute.
+This image processing time means that ingestion of a document with 10 images can take up to 10 minutes without parallelization.a
+
+These cost and latency considerations motivate the use of a [cache](#caching) for image-heavy processing tasks, such as our use case.
+
 #### Classifier
 
 The classifier helps reducing the number of calls made to GPT Vision, thereby decreasing latency and costs.
@@ -115,22 +134,11 @@ The value can range between 0 and 1.
 
 #### Caching
 
-Enrichment is a costly operation, and it's important to try and avoid redundant calls to the Enrichment Service when possible.
-
-GPT Vision has three modes for its detail level: `low`, `high`, and `auto` (default).
-The cost of the service is different for each mode. For `low` mode, the cost of the service is 85 tokens per image regardless what is the image resolution.
-For the `high` resolution mode, it depends on the size of image.
-For example, if the image size is 4096 x 8192, the cost will be 1105 tokens.
-In this mode, GPT adjusts the image resolution and tiles it for a more detailed output.
-The images with resolution higher than 512 x 512 are considered high resolution images.
-
-In terms of latency, it depends on the size and resolution of images and the number of services that are being called, the latency of the service can be high from 6s to 1 min.
-For example, the latency of the service for a 4096 x 8192 image can be up to one minute.
-It means ingestion of a document with 10 images can take up to 10 minutes without parallelization.
+As discussed [above](#cost-and-latency), image enrichment can be a costly operation, and it's important to try and avoid redundant calls to the Enrichment Service when possible, especially given that the same image can appear multiple times across documents or the same document might be re-ingested with the same enrichment service configuration for different rounds of experimentation.
 
 To avoid redundant calls in the Enrichment Service to underlying services including GPT and image analysis services, a cache can be used to store the results of the enrichment service to reduce the cost (almost zero if the result is cached for all consequent enrichment calls and Azure Cosmos DB used as a cache) and latency of the service.
 
-The cache uses Azure Cosmos Db for caching the results of the Enrichment Service.
+The cache uses Azure CosmosDB for caching the results of the Enrichment Service.
 
 The cache will be a key/value store with an expiry date that will be refreshed anytime that the key is accessed.
 The key will be generated from the input of the enrichment service and the value will be the result of the enrichment service.
