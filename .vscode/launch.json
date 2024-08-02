@@ -3,6 +3,14 @@
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
+    "inputs": [
+        {
+            "id": "dataset-path",
+            "type": "promptString",
+            "description": "Path to the dataset",
+            "default": "${workspaceFolder}\\src\\eval\\data\\vision_and_text_sample"
+        }
+    ],
     "configurations": [
         {
             "name": "Python Debugger: API",
@@ -20,6 +28,8 @@
             "cwd": "${workspaceFolder}/src/eval",
             "justMyCode": false,
             "args": [
+                "--dataset-path",
+                "${input:dataset-path}"
             ]
         }
     ]

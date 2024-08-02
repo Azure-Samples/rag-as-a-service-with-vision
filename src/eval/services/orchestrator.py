@@ -1,6 +1,7 @@
 import os
 import json
 from loguru import logger as log
+import pathlib
 import pandas as pd
 from tqdm import tqdm
 from uuid import uuid4
@@ -78,24 +79,6 @@ class Orchestrator(object):
             dataset.loc[index, _SEARCH_RESPONSE_KEY] = json.dumps([doc['page_content'] for doc in chunk_answer.json()])
 
 
-    def _evaluate_search(
-            self,
-            dataset: pd.DataFrame,
-            expected_answer_column_name: str,
-    ):
-        log.info("Evaluating search...")
-        for index, row in tqdm(dataset.iterrows(), total=dataset.shape[0]):
-            expected_answer = row[expected_answer_column_name]
-            search_response = json.loads(row[_SEARCH_RESPONSE_KEY])
-
-            score = self._rouge_evaluator.evaluate(
-                prediction=search_response,
-                expected_answer=expected_answer
-            )
-
-            dataset.loc[index, _ROUGE_SCORE_COLUMN_NAME] = score
-
-
     def _perform_chat(
         self,
         dataset: pd.DataFrame,
@@ -170,14 +153,15 @@ class Orchestrator(object):
         self._perform_chat(dataset, question_column_name, config_id)
 
         # evaluating
-        self._evaluate_search(dataset, expected_answer_column_name)
         self._evaluate_chat(dataset,expected_answer_column_name, question_column_name)
 
+        dataset_name = pathlib.PurePath(dataset_path).name
         output_dir = os.path.join(
             os.path.dirname(__file__),
             "..",
             "output",
             "evaluation_results",
+            dataset_name,
             experiment_id
         )
 

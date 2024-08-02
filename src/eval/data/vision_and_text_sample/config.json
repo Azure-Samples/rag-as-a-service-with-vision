@@ -1,0 +1,48 @@
+{
+    "id": "mhtml-vision-example",
+    "name": "MHTML vision example config",
+    "loader_config": {
+        "loader_name": "MHTMLLoaderWithVision",
+        "loader_kwargs": {}
+    },
+    "media_enrichment": {
+        "images": [],
+        "features": {
+            "cache": {
+                "enabled": true,
+                "key_format": "example-{hash}"
+            },
+            "classifier": {
+                "enabled": false
+            },
+            "mllm": {
+                "enabled": true,
+                "prompt": "You are an assistant whose job is to provide the explanation of images which is going to be used to retrieve the images.",
+                "llm_kwargs": {},
+                "model": "gpt-4o",
+                "detail_mode": "auto"
+            }
+        }
+    },
+    "splitter_config": {
+        "splitter_name": "RecursiveCharacterTextSplitter",
+        "splitter_kwargs": {
+            "chunk_size": 1000,
+            "chunk_overlap": 200
+        }
+    },
+    "embedding_config": {
+        "embedding_model_name": "AzureOpenAIEmbeddings",
+        "embedding_model_kwargs": {
+            "azure_deployment": "text-embedding-ada-002",
+            "openai_api_version": "2023-12-01-preview"
+        }
+    },
+    "llm_config": {
+        "llm_name": "AzureOpenAI",
+        "llm_kwargs": {
+            "api_version": "2023-12-01-preview",
+            "deployment_name": "gpt-4o"
+        }
+    }
+}
