@@ -166,6 +166,10 @@ For example, the request will be with an additional field named `expiry` in the 
 
 ![Ingestion workflow](./assets/doc-upload-flow.drawio.png)
 
+Note that the ingestion flow in this repo can handle more document formats as long as there's an available [Langchain document loader](https://python.langchain.com/v0.1/docs/modules/data_connection/document_loaders/);
+however, the diagram above reflects the vision enhancement process via the enrichment service, which is currently only supported for MHTML documents via the custom loader implemented [here](../src/api/langchain_extensions/loaders/mhtml_loader_with_vision.py).
+The [base vision loader](../src/api/langchain_extensions/loaders/base_loader_with_vision.py) can be extended to support other document formats as needed.
+
 #### Document loader
 
 The MHTML loader is designed to process a specified MHTML file, producing a sequence of Langchain document(s) based on the loader parameters available in the config JSON file.
