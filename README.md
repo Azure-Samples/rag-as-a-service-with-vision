@@ -1,5 +1,4 @@
-# Project Name
-
+# RAG with Vision Application Framework
 (short, 1-3 sentenced, description of the project)
 
 ## Features
