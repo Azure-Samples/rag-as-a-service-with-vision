@@ -1,6 +1,7 @@
 import os
 import json
 from loguru import logger as log
+import pathlib
 import pandas as pd
 from tqdm import tqdm
 from uuid import uuid4
@@ -152,14 +153,15 @@ class Orchestrator(object):
         self._perform_chat(dataset, question_column_name, config_id)
 
         # evaluating
-        self._evaluate_search(dataset, expected_answer_column_name)
         self._evaluate_chat(dataset,expected_answer_column_name, question_column_name)
 
+        dataset_name = pathlib.PurePath(dataset_path).name
         output_dir = os.path.join(
             os.path.dirname(__file__),
             "..",
             "output",
             "evaluation_results",
+            dataset_name,
             experiment_id
         )
 

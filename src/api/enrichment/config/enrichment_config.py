@@ -59,10 +59,10 @@ class EnrichmentConfig(object):
     @property
     def mllm_api_version(self) -> str:
         if not self._azure_mllm_api_version:
-            self._azure_mllm_api_version = os.environ.get("OPENAI_API_VERSION")
+            self._azure_mllm_api_version = os.environ.get("AZURE_OPENAI_API_VERSION")
 
             if not self._azure_mllm_api_version:
-                raise ValueError("OPENAI_API_VERSION is not defined")
+                raise ValueError("AZURE_OPENAI_API_VERSION is not defined")
         
         return self._azure_mllm_api_version
     
