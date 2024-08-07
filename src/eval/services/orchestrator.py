@@ -110,7 +110,7 @@ class Orchestrator(object):
                 config_id=config_id
             )
 
-            dataset.loc[index, _CHAT_RESPONSE_KEY] = chat_answer.text
+            dataset.loc[index, _CHAT_RESPONSE_KEY] = chat_answer.json()["answer"]
 
 
     def _evaluate_chat(
