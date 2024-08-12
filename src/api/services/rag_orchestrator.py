@@ -9,7 +9,7 @@ from langchain_core.documents import Document
 from langchain_text_splitters import TextSplitter
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.runnables import RunnablePassthrough, RunnableParallel
 from langchain_openai import AzureChatOpenAI
 from loguru import logger
 from typing import Annotated, Optional
@@ -18,6 +18,7 @@ from enrichment.models.endpoint import MediaEnrichmentRequest
 from configs.config import Config
 from models.temp_file_reference import TempFileReference
 from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig, SearchConfig
+from models.responses.chat_response import ChatResponse
 from .cosmos_config_manager import CosmosConfigManager
 from .vision_loader_manager import vision_loader_manager
 
@@ -56,7 +57,7 @@ class RagOrchestrator(object):
         if (vision_loader_manager.is_vision_loader(loader_config.loader_name)):
             if not media_enrichment:
                 raise Exception("A vision loader must set a media_enrichment request.")
-            
+
             return vision_loader_manager.initialize_vision_loader(loader_config, file_path, media_enrichment).load()
         else:
             loader: BaseLoader = getattr(
@@ -147,14 +148,25 @@ class RagOrchestrator(object):
             return "\n\n".join([d.page_content for d in docs])
 
         chain = (
-            {"context": retriever | format_docs, "question": RunnablePassthrough()}
+            RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
             | prompt
             | model
             | StrOutputParser()
         )
 
+        chain_with_source = RunnableParallel(
+            {"context": retriever, "question": RunnablePassthrough()}
+        ).assign(answer=chain)
+
         logger.info(f"Chatting with model for {config_id}...")
-        return chain.invoke(query)
+        chain_response = chain_with_source.invoke(query)
+
+        answer = chain_response["answer"]
+        sources_dict = [doc.dict() for doc in chain_response["context"]]
+        return ChatResponse(
+            answer=answer,
+            sources=sources_dict
+        )
 
 
     def upload_documents(
