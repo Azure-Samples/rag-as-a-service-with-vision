@@ -19,8 +19,9 @@ from configs.config import Config
 from models.temp_file_reference import TempFileReference
 from models.rag_config import EmbeddingConfig, LoaderConfig, SplitterConfig, RagConfig, SearchConfig
 from models.responses.chat_response import ChatResponse
+from .config_manager import load_config
 from .cosmos_config_manager import CosmosConfigManager
-from .vision_loader_manager import vision_loader_manager
+from .vision_ingest_class_manager import vision_ingest_class_manager
 
 
 def _build_index_name(config_id: str):
@@ -54,17 +55,29 @@ class RagOrchestrator(object):
         media_enrichment: Optional[MediaEnrichmentRequest] = None
     ) -> list[Document]:
 
-        if (vision_loader_manager.is_vision_loader(loader_config.loader_name)):
+        if (vision_ingest_class_manager.is_vision_loader(loader_config.loader_name)):
             if not media_enrichment:
                 raise Exception("A vision loader must set a media_enrichment request.")
 
-            return vision_loader_manager.initialize_vision_loader(loader_config, file_path, media_enrichment).load()
+            return vision_ingest_class_manager.initialize_vision_loader(loader_config, file_path, media_enrichment).load()
         else:
             loader: BaseLoader = getattr(
                 import_module("langchain_community.document_loaders"),
                 loader_config.loader_name
             )
             return loader(file_path=file_path, **loader_config.loader_kwargs).load()
+
+    def _split_documents(
+        self,
+        splitter_config: SplitterConfig,
+        documents: list[Document]
+    ) -> list[Document]:
+
+        if (vision_ingest_class_manager.is_vision_splitter(splitter_config.splitter_name)):
+            return vision_ingest_class_manager.initialize_vision_splitter(splitter_config).split_documents(documents)
+        else:
+            splitter = self._init_splitter(splitter_config)
+            return splitter.split_documents(documents)
 
     def _init_splitter(self, splitter_config: SplitterConfig) -> TextSplitter:
         splitter = getattr(
@@ -101,7 +114,8 @@ class RagOrchestrator(object):
     ):
         logger.debug("Initializing search dependencies...")
         index_name = _build_index_name(config_id)
-        config = self._try_get_config(config_id)
+        # config = self._try_get_config(config_id)
+        config = load_config(config_id)
 
         embedding_function = self._init_embeddings(config.embedding_config)
         vector_store = self._init_azure_search(
@@ -122,7 +136,8 @@ class RagOrchestrator(object):
     ):
         logger.debug("Initializing chat dependencies...")
         index_name = _build_index_name(config_id)
-        config = self._try_get_config(config_id)
+        # config = self._try_get_config(config_id)
+        config = load_config(config_id)
 
         prompt = ChatPromptTemplate.from_template(config.chat_config.prompt_template)
         model = AzureChatOpenAI(
@@ -175,10 +190,11 @@ class RagOrchestrator(object):
         files: list[TempFileReference],
     ):
         logger.info(f"Starting upload documents for {config_id}")
-        config = self._try_get_config(config_id)
+        # config = self._try_get_config(config_id)
+        config = load_config(config_id)
         index_name = _build_index_name(config_id)
         embedding_function = self._init_embeddings(config.embedding_config)
-        splitter = self._init_splitter(config.splitter_config)
+        # splitter = self._init_splitter(config.splitter_config)
         vector_store = self._init_azure_search(
             self._config,
             config.search_config,
@@ -190,6 +206,7 @@ class RagOrchestrator(object):
             logger.debug(f"loading file {i + 1} of {len(files)}...")
             docs = self._load_documents(file.temp_file_path, config.loader_config, config.media_enrichment)
             logger.debug(f"splitting file {i + 1} of {len(files)}...")
-            docs = splitter.split_documents(docs)
+            # docs = splitter.split_documents(docs)
+            docs = self._split_documents(config.splitter_config, docs)
             logger.debug(f"persisting file {i + 1} of {len(files)}...")
             vector_store.add_documents(docs)
