@@ -25,10 +25,11 @@
         }
     },
     "splitter_config": {
-        "splitter_name": "RecursiveCharacterTextSplitter",
+        "splitter_name": "RecursiveSplitterWithImage",
         "splitter_kwargs": {
             "chunk_size": 1000,
-            "chunk_overlap": 200
+            "chunk_overlap": 200,
+            "image_collection_in_metadata": true
         }
     },
     "embedding_config": {
