@@ -64,11 +64,9 @@ This feedback for (1), the image description component, helped to fine-tune the 
 
 ![image feedback tool](./assets/image-feedback-tool-screenshot.png)
 
-For (2), the scoring of LLM-generated answers, we collected this information as a barometer for the overall system quality, as well as to see how well SME judgement aligned with our [GPT evaluator](#llm-as-a-judge-evaluation).
+For (2), the scoring of LLM-generated answers, we collected this information as a barometer for the overall system quality, as well as to see how well SME judgement aligned with our [GPT evaluator](#llm-as-a-judge-evaluation) to enable further tuning of the scoring prompt.
 
 ![answer feedback tool with dropdown](./assets/answer-feedback-tool-with-dropdown.png)
-
-![answer feedback tool](./assets/answer-feedback-tool-screenshot.png)
 
 ## Additional resources
 
