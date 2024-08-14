@@ -313,13 +313,11 @@ The output of the `/chat` endpoint is just a string of the LLM response to the u
 
 This endpoint accepts the following parameters to enrich images:
 
-- `domain`: The domain for which enrichment is requested.
-- `config_version`: The version of the configuration to be used.
 - `images` (up to 10): A list of image files to be processed by CHATGPT4 Vision. Classifier only considers the first image as it will be used only during ingestion.
 - `features`: it will be a set of features including gpt4v, classifier and caching.
   - `cache`
     - `enabled`: A boolean flag indicating whether caching should be enabled.
-    - `key_format`: a string to format the generated keys using domain, config version and hash of the images and feature collection. For example, key_format can be set to `'{domain}-{config_version}-{hash}'`.
+    - `key_format`: a string to format the generated keys using the hash of the images and feature collection. For example, key_format can be set to `'{hash}'`.
     - `expiry`: a string in the format of `dd:HH:mm:ss` to provide an expiry time span in the document level. If it is not provided as a part of the request, the cached item will be expired based on the time specified in the index collection level.
   - `classifier`:
     - `enabled`: A boolean flag indicating whether the classifier should be used. Will be true for ingestion only for now.
@@ -336,8 +334,6 @@ This endpoint accepts the following parameters to enrich images:
 
 ```json
 {
-  "domain": "string",
-  "config_version": "string",
   "images": [
     "string"
   ],
