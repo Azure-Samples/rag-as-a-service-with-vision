@@ -32,6 +32,12 @@ class Orchestrator(object):
 
 
     def __init__(self, api_request_manager: ApiRequestManager):
+        """
+        Initializes the Orchestrator with an API request manager.
+
+        Args:
+            api_request_manager (ApiRequestManager): The API request manager instance.
+        """
         self._api_request_manager = api_request_manager
 
         # init the evaluators
@@ -45,6 +51,14 @@ class Orchestrator(object):
         raw_documents_path: str,
         skip_ingest: bool = False
     ):
+        """
+        Sets up the environment by uploading the configuration and raw documents.
+
+        Args:
+            config (dict): Configuration dictionary to upload.
+            raw_documents_path (str): Path to the folder containing raw documents.
+            skip_ingest (bool): Flag to skip document ingestion (default is False).
+        """
         log.info("Setting up environment...")
         res = self._api_request_manager.upload_config(config)
         res.raise_for_status()
@@ -66,6 +80,13 @@ class Orchestrator(object):
             dataset: pd.DataFrame,
             expected_answer_column_name: str,
     ):
+        """
+        Evaluates search responses against expected answers using ROUGE metrics.
+
+        Args:
+            dataset (pd.DataFrame): DataFrame containing the dataset to evaluate.
+            expected_answer_column_name (str): Column name for expected answers.
+        """
         log.info("Evaluating search...")
         for index, row in tqdm(dataset.iterrows(), total=dataset.shape[0]):
             expected_answer = row[expected_answer_column_name]
@@ -85,6 +106,14 @@ class Orchestrator(object):
         question_column_name: str,
         config_id: str,
     ):
+        """
+        Performs chat interactions and stores responses in the dataset.
+
+        Args:
+            dataset (pd.DataFrame): DataFrame containing the dataset to process.
+            question_column_name (str): Column name for questions to ask.
+            config_id (str): Configuration ID for the chat request.
+        """
         log.info("Performing chat...")
         for index, row in tqdm(dataset.iterrows(), total=dataset.shape[0]):
             question = row[question_column_name]
@@ -104,6 +133,14 @@ class Orchestrator(object):
         expected_answer_column_name: str,
         question_column_name: str
     ):
+        """
+        Evaluates chat responses against expected answers using GPT metrics.
+
+        Args:
+            dataset (pd.DataFrame): DataFrame containing the dataset to evaluate.
+            expected_answer_column_name (str): Column name for expected answers.
+            question_column_name (str): Column name for questions asked.
+        """
         log.info("Evaluating chat...")
         for index, row in tqdm(dataset.iterrows(), total=dataset.shape[0]):
             expected_answer = row[expected_answer_column_name]
@@ -125,6 +162,18 @@ class Orchestrator(object):
         expected_answer_column_name: str,
         skip_ingest: bool
     ):
+        """
+        Executes the evaluation process for a dataset of questions and answers.
+    
+        Args:
+            dataset_path (str): Directory containing the dataset files.
+            question_column_name (str): Column name for questions.
+            expected_answer_column_name (str): Column name for expected answers.
+            skip_ingest (bool): Flag to skip raw document ingestion.
+    
+        Raises:
+            FileNotFoundError: If required files or directories are missing.
+        """
         experiment_id = str(uuid4())
         log.info(f"Starting experiment {experiment_id}...")
 
