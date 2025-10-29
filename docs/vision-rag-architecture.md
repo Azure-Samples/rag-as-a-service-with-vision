@@ -41,15 +41,15 @@ The [Retrieval-Augmented Generation architecture](https://learn.microsoft.com/en
 The classic version of the pattern assumes text-only content in the document store;
 however, in many enterprise scenarios, the content that users wish to query can contain images and tables that are also essential to accurately answering their questions that wouldn't normally be captured by a text-only document ingestion flow.
 
-To address this use case, it makes sense to incorporate a **multimodal LLM**, such as [GPT-4V](https://techcommunity.microsoft.com/t5/ai-azure-ai-services-blog/gpt-4-turbo-with-vision-on-azure-openai-service/ba-p/3979933) or [GPT-4o](https://azure.microsoft.com/en-us/blog/introducing-gpt-4o-openais-new-flagship-multimodal-model-now-in-preview-on-azure/), into our RAG workflow.
+To address this use case, it makes sense to incorporate a **multimodal LLM**, such as [GPT-4o](https://azure.microsoft.com/en-us/blog/introducing-gpt-4o-openais-new-flagship-multimodal-model-now-in-preview-on-azure/), into our RAG workflow.
 
 This document provides an overview of the sample architecture presented in this repo
 
 ### Considerations
 
 - Cost and latency
-  - At the time of development, GPT-4V was the only multimodal LLM available via Azure OpenAI, and latency/cost were high enough based on expected load on the system that we felt it would be better to explore the pattern of generating and querying text descriptions of images as opposed to direct inference against a multimodal LLM.
-  However, as the technology develops, newer multimodal models may be released with cheaper pricing and lower latency, which may make the direct inference architecture more viable.
+  - GPT-4o provides improved performance over previous multimodal models with better cost efficiency and lower latency. While direct inference against multimodal LLMs is more viable with GPT-4o, this architecture still provides value for scenarios requiring optimized costs and response times, especially when processing large volumes of images.
+  However, as the technology continues to develop, newer multimodal models may be released with even cheaper pricing and lower latency, which may make the direct inference architecture even more viable.
   - not all images in documents are relevant or contain useful information (e.g. business logo letterhead, etc.) - we propose using a classifier to identify images for which using the enrichment service to generate an image description would have most value
 - MHTML document format - for our use case, the document store we were considering was primarily HTML documents.
   Some of the images in our use case required levels of authentication/authorization and our loader would need additional consideration to bypass that auth system when downloading the image content, so we chose to convert the documents to MHTML format prior to ingestion to ensure all text and image content was captured at their original locations in the document for ease of further processing.
@@ -92,7 +92,7 @@ RAG config sample that uses all the enrichment features:
 #### Multimodal LLM
 
 The multimodal LLM is a large language model with additional vision features to understand the content of images.
-Examples of such models are GPT-4v or GPT-4o, which need to be specified in the `model` field.
+GPT-4o is the recommended multimodal model, which needs to be specified in the `model` field.
 
 The MLLM also requires a `prompt`, which is specific for image summarization and different from the one used at inference time.
 
@@ -100,7 +100,7 @@ You can complement other LLM arguments by using `llm_kwargs`, such as temperatur
 
 ##### Cost and latency
 
-GPT Vision has [three modes](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#image-tokens-gpt-4-turbo-with-vision) for its detail level: `low`, `high`, and `auto` (default).
+GPT-4o has [three modes](https://learn.microsoft.com/en-us/azure/ai-services/openai/overview#image-tokens-gpt-4-turbo-with-vision) for its detail level: `low`, `high`, and `auto` (default).
 The cost of the service is different for each mode.
 For `low` mode, the cost of the service is 85 tokens per image regardless what is the image resolution.
 For the `high` resolution mode, it depends on the size of image:
@@ -117,7 +117,7 @@ These cost and latency considerations motivate the use of a [cache](#caching) fo
 
 #### Classifier
 
-The classifier helps reducing the number of calls made to GPT Vision, thereby decreasing latency and costs.
+The classifier helps reducing the number of calls made to GPT-4o, thereby decreasing latency and costs.
 
 The classifier analyzes images using Azure Computer Vision Tags to categorize them based on their content.
 It follows a set of rules to determine the appropriate action for each image:
@@ -125,8 +125,8 @@ It follows a set of rules to determine the appropriate action for each image:
 - Ignore Category: If the image does not contain any tags or text, or if the image is a logo, it is categorized as "IGNORE".
   These images are considered irrelevant for further processing.
 
-- GPT Vision Category: If the image contains text and keywords related to diagrams, designs, software, or websites, it is categorized as "GPT VISION".
-  These images are suitable for further processing with GPT Vision to extract additional information.
+- Enrichment Category: If the image contains text and keywords related to diagrams, designs, software, or websites, it is categorized as "ENRICH".
+  These images are suitable for further processing with GPT-4o to extract additional information.
 
 The classifier requires a `threshold`, which represents the confidence score we want to consider for the provided tags.
 By setting a specific threshold, we filter out tags with confidence scores below that level, ensuring that only reliable predictions are retained.
@@ -313,8 +313,8 @@ The output of the `/chat` endpoint is just a string of the LLM response to the u
 
 This endpoint accepts the following parameters to enrich images:
 
-- `images` (up to 10): A list of image files to be processed by CHATGPT4 Vision. Classifier only considers the first image as it will be used only during ingestion.
-- `features`: it will be a set of features including gpt4v, classifier and caching.
+- `images` (up to 10): A list of image files to be processed by GPT-4o. Classifier only considers the first image as it will be used only during ingestion.
+- `features`: it will be a set of features including GPT-4o, classifier and caching.
   - `cache`
     - `enabled`: A boolean flag indicating whether caching should be enabled.
     - `key_format`: a string to format the generated keys using the hash of the images and feature collection. For example, key_format can be set to `'{hash}'`.
@@ -325,7 +325,7 @@ This endpoint accepts the following parameters to enrich images:
   - `mllm`:
     - `enabled`: A boolean flag indicating whether GPT-4 variant is enabled.
     - `prompt`: The system message prompt to be used.
-    - `detail_mode`: it canbe set to `low`, `high` and `auto` by default. If you have any high resolution images (any image with any dimension higher than 512) and set the detail mode to `auto` or `high`, the cost and latency will be higher but gpt4v will provide a more detailed information.
+    - `detail_mode`: it can be set to `low`, `high` and `auto` by default. If you have any high resolution images (any image with any dimension higher than 512) and set the detail mode to `auto` or `high`, the cost and latency will be higher but GPT-4o will provide a more detailed information.
     - `llm_kwargs`:
       - `temperature`: The temperature parameter for language model generation.
       - `max_tokens`: The maximum number of tokens for language model output.
@@ -361,8 +361,8 @@ This endpoint accepts the following parameters to enrich images:
 
 The response from the endpoint is a `JSON` object that has the following format -
 
-- `classifier_result`: The category to which the first image is classified (if classifier is enabled). Otherwise, it will be None. If the category is "GPT VISION", then image description would be extracted.
-- `generated_response`: Text describing the image (if extracted using ChatGPT4 Vision model).
+- `classifier_result`: The category to which the first image is classified (if classifier is enabled). Otherwise, it will be None. If the category is "ENRICH", then image description would be extracted.
+- `generated_response`: Text describing the image (if extracted using GPT-4o model).
 
 ##### Output sample
 
@@ -371,7 +371,7 @@ The response from the endpoint is a `JSON` object that has the following format 
 "generated_response": {
     "content": "This image shows a collage of five men, each dressed in different styles of formal attire. From left to right:\n\n1. The first man is wearing a dark blue, polka-dotted suit with a white shirt and a dark tie. He is also wearing black dress shoes.\n\n2. The second man is dressed in a teal blue suit with a matching shirt and no tie. He has brown dress shoes.\n\n3. The third man is wearing a light grey, three-piece suit with a white shirt, a light grey vest, a dark tie, and a white pocket square. He is also wearing black dress shoes.\n\n4. The fourth man is in a black leather bomber jacket with red and green stripes on the cuffs, paired with black pants and black sneakers.\n\n5. The fifth man is wearing a black double-breasted suit with a black shirt and no tie. He has a tattoo on his right hand and is wearing black dress shoes.\n\nAll faces have been blurred out, making it impossible to identify the individuals."
   },
-  "classifier_result": "GPT_VISION"
+  "classifier_result": "ENRICH"
 }
 ```
 

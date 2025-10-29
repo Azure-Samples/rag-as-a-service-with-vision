@@ -87,7 +87,7 @@ class EnrichmentService:
     def _is_classifier_enabled(self, req: MediaEnrichmentRequest):
         return req.features and req.features.classifier and req.features.classifier.enabled
 
-    def _is_gpt4v_enabled(self, req: MediaEnrichmentRequest):
+    def _is_mllm_enabled(self, req: MediaEnrichmentRequest):
         return req.features and req.features.mllm and req.features.mllm.enabled
 
     async def async_get_media_enrichment_result(self, req: MediaEnrichmentRequest):
@@ -107,7 +107,7 @@ class EnrichmentService:
             if self._is_classifier_enabled(req):
                 classifier_result = await self._async_get_classifier_result(req)
                 classifier_result_name = classifier_result.name
-                if classifier_result == Category.GPT_VISION:
+                if classifier_result == Category.ENRICH:
                     generated_response = await self._async_get_generated_answer(req)
             else:
                 generated_response = await self._async_get_generated_answer(req)
