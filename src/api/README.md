@@ -28,7 +28,7 @@ The following configuration parameters need to be defined per the [`sample.env` 
 
 - **AZURE_OPENAI_API_VERSION** [REQUIRED]: The OpenAI API version.
 - **AZURE_OPENAI_API_KEY** [REQUIRED]: The OpenAI API key.
-- **AZURE_MLLM_DEPLOYMENT_MODEL** [REQUIRED]: The OpenAI multi-modal LLM model (i.e. GPT-4v, GPT 4o)
+- **AZURE_MLLM_DEPLOYMENT_MODEL** [REQUIRED]: The OpenAI multi-modal LLM model (i.e. GPT 4o)
 
 - **AZURE_SEARCH_ENDPOINT** [REQUIRED]: The Azure AI Search endpoint.
 - **AZURE_SEARCH_API_KEY** [REQUIRED]: The Azure AI Search key.

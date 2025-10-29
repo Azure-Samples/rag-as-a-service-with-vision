@@ -19,4 +19,4 @@ def categorize_image(tags_with_confidence, confidence_score_value):
         return Category.IGNORE
     # fallback for everything else
     else:
-        return Category.GPT_VISION
+        return Category.ENRICH
