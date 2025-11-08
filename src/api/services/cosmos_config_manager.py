@@ -13,10 +13,17 @@ class CosmosConfigManager(object):
     _container: ContainerProxy
 
     def __init__(self, cosmos_config: Annotated[CosmosConfig, Depends(CosmosConfig)]):
-        cosmos_client = CosmosClient(
-            url=cosmos_config.azure_cosmos_db_uri,
-            credential=cosmos_config.azure_cosmos_db_key
-        )
+        # Use managed identity if available, otherwise fall back to key
+        if cosmos_config.credential:
+            cosmos_client = CosmosClient(
+                url=cosmos_config.azure_cosmos_db_uri,
+                credential=cosmos_config.credential
+            )
+        else:
+            cosmos_client = CosmosClient(
+                url=cosmos_config.azure_cosmos_db_uri,
+                credential=cosmos_config.azure_cosmos_db_key
+            )
         database = cosmos_client.create_database_if_not_exists(cosmos_config.azure_cosmos_db_database)
         self._container = database.create_container_if_not_exists(cosmos_config.azure_cosmos_db_container, partition_key=PartitionKey(_CONTAINER_PARTITION_KEY))
 

@@ -15,15 +15,15 @@
     "embedding_config": {
         "embedding_model_name": "AzureOpenAIEmbeddings",
         "embedding_model_kwargs": {
-            "azure_deployment": "text-embedding-3-large",
-            "openai_api_version": "2025-03-01-preview"
+            "azure_deployment": "text-embedding-deployment",
+            "openai_api_version": "2024-05-01-preview"
         }
     },
     "llm_config": {
         "llm_name": "AzureOpenAI",
         "llm_kwargs": {
-            "api_version": "2023-12-01-preview",
-            "deployment_name": "gpt-35-turbo"
+            "api_version": "2024-05-01-preview",
+            "deployment_name": "gpt-4.1-deployment"
         }
     },
     "media_enrichment": {
@@ -32,7 +32,7 @@
                 "enabled": true,
                 "prompt": "You are an assistant whose job is provide detailed text descriptions of images which are going to be used to retrieve the images.",
                 "llm_kwargs": {},
-                "model": "gpt-4o",
+                "model": "gpt-4o-deployment",
                 "detail_mode": "auto"
             },
             "classifier": {

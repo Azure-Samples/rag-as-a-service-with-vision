@@ -41,11 +41,41 @@ class RagOrchestrator(object):
 
 
     def _init_embeddings(self, embedding_config: EmbeddingConfig) -> Embeddings:
-        embedding_function = getattr(
-            import_module("langchain_community.embeddings"),
-            embedding_config.embedding_model_name
-        )
-        return embedding_function(**embedding_config.embedding_model_kwargs)
+        # Check if it's an Azure OpenAI embedding model
+        if "azure" in embedding_config.embedding_model_name.lower() or "openai" in embedding_config.embedding_model_name.lower():
+            # Use AzureOpenAIEmbeddings directly with token provider authentication
+            from langchain_openai import AzureOpenAIEmbeddings
+            
+            deployment_name = embedding_config.embedding_model_kwargs.get("azure_deployment", "text-embedding-3-large")
+            kwargs = {k: v for k, v in embedding_config.embedding_model_kwargs.items() if k != "azure_deployment"}
+            
+            try:
+                return AzureOpenAIEmbeddings(
+                    azure_deployment=deployment_name,
+                    api_version=self._config.openai_version,
+                    azure_endpoint=self._config.openai_endpoint,
+                    azure_ad_token_provider=self._config.credential,
+                    **kwargs
+                )
+            except Exception as e:
+                # Fallback to API key if available (for local development)
+                if self._config.openai_api_key:
+                    return AzureOpenAIEmbeddings(
+                        azure_deployment=deployment_name,
+                        api_version=self._config.openai_version,
+                        azure_endpoint=self._config.openai_endpoint,
+                        api_key=self._config.openai_api_key,
+                        **kwargs
+                    )
+                else:
+                    raise Exception(f"No authentication method available for Azure OpenAI Embeddings: {e}")
+        else:
+            # Use the original method for other embedding models
+            embedding_function = getattr(
+                import_module("langchain_community.embeddings"),
+                embedding_config.embedding_model_name
+            )
+            return embedding_function(**embedding_config.embedding_model_kwargs)
 
     def _load_documents(
         self,
@@ -137,11 +167,28 @@ class RagOrchestrator(object):
         config = self._try_get_config(config_id)
 
         prompt = ChatPromptTemplate.from_template(config.chat_config.prompt_template)
-        model = AzureChatOpenAI(
-            azure_deployment=config.chat_config.azure_deployment,
-            api_version=self._config.openai_version,
-            **config.chat_config.llm_kwargs
-        )
+        
+        # Use AzureChatOpenAI directly with token provider authentication
+        try:
+            model = AzureChatOpenAI(
+                azure_deployment=config.chat_config.azure_deployment,
+                api_version=self._config.openai_version,
+                azure_endpoint=self._config.openai_endpoint,
+                azure_ad_token_provider=self._config.credential,
+                **config.chat_config.llm_kwargs
+            )
+        except Exception as e:
+            # Fallback to API key if available (for local development)
+            if self._config.openai_api_key:
+                model = AzureChatOpenAI(
+                    azure_deployment=config.chat_config.azure_deployment,
+                    api_version=self._config.openai_version,
+                    azure_endpoint=self._config.openai_endpoint,
+                    api_key=self._config.openai_api_key,
+                    **config.chat_config.llm_kwargs
+                )
+            else:
+                raise Exception(f"No authentication method available for Azure OpenAI: {e}")
 
         embedding_function = self._init_embeddings(config.embedding_config)
         vector_store = self._init_azure_search(

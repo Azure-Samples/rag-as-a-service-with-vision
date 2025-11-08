@@ -1,6 +1,7 @@
 import openai
 import os
 from openai import AzureOpenAI
+from azure.identity import DefaultAzureCredential
 from enrichment.models.endpoint import GeneratedResponse
 from enrichment.config.enrichment_config import enrichment_config
 from enrichment.utils.files_util import get_image_format
@@ -19,12 +20,33 @@ class AzureMllmService:
 
         messages.append({ "role": "user", "content": content })
 
-        client = AzureOpenAI(
-            azure_endpoint = enrichment_config.mllm_endpoint,
-            azure_deployment = enrichment_config.mllm_model,
-            api_version = enrichment_config.mllm_api_version,
-            api_key = enrichment_config.mllm_key,
-        )
+        # Use Entra ID authentication
+        try:
+            client_id = os.environ.get("AZURE_CLIENT_ID")
+            if client_id:
+                # Use DefaultAzureCredential with specified client_id for user-assigned managed identity
+                credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+            else:
+                # Use DefaultAzureCredential without client_id
+                credential = DefaultAzureCredential()
+            
+            client = AzureOpenAI(
+                azure_endpoint = enrichment_config.mllm_endpoint,
+                azure_deployment = enrichment_config.mllm_model,
+                api_version = enrichment_config.mllm_api_version,
+                azure_ad_token_provider = credential,
+            )
+        except Exception as e:
+            # Fallback to API key for local development
+            if enrichment_config.mllm_key:
+                client = AzureOpenAI(
+                    azure_endpoint = enrichment_config.mllm_endpoint,
+                    azure_deployment = enrichment_config.mllm_model,
+                    api_version = enrichment_config.mllm_api_version,
+                    api_key = enrichment_config.mllm_key,
+                )
+            else:
+                raise Exception(f"Neither Entra ID authentication nor API key is available: {e}")
 
         completion = client.chat.completions.create(
             model = enrichment_config.mllm_model,

@@ -1,6 +1,7 @@
 
 import datetime
 from azure.cosmos import ContainerProxy, CosmosClient, exceptions, PartitionKey
+from azure.identity import DefaultAzureCredential
 from enrichment.config.enrichment_config import EnrichmentConfig, enrichment_config
 from typing import Optional
 
@@ -11,8 +12,9 @@ class CosmosDbKeyValueCache:
     """
     _container: ContainerProxy
 
-    def __init__(self, cosmos_uri: str, cosmos_key: str, db_name: str, container: str):
-        cosmos_client = CosmosClient(cosmos_uri, cosmos_key)
+    def __init__(self, cosmos_uri: str, credential_or_key, db_name: str, container: str):
+        # Handle both credential objects and key strings
+        cosmos_client = CosmosClient(cosmos_uri, credential_or_key)
 
         database = cosmos_client.create_database_if_not_exists(db_name)
         try:
@@ -67,7 +69,26 @@ def get_cosmosdb_cache(enrichment_config: EnrichmentConfig = enrichment_config):
     if _cache:
         return _cache
 
-    _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, enrichment_config.cosmos_db_key, enrichment_config.cosmos_db_name , enrichment_config.cosmos_collection_name)
+    # Use DefaultAzureCredential with managed identity client ID
+    import os
+    try:
+        client_id = os.environ.get("AZURE_CLIENT_ID")
+        if client_id:
+            # Use DefaultAzureCredential with specified client_id for user-assigned managed identity
+            credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+        else:
+            # Use DefaultAzureCredential without client_id
+            credential = DefaultAzureCredential()
+        
+        _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, credential, enrichment_config.cosmos_db_name, enrichment_config.cosmos_collection_name)
+    except Exception as e:
+        # Fallback to connection key if available
+        if hasattr(enrichment_config, 'cosmos_db_key') and enrichment_config.cosmos_db_key:
+            print(f"⚠️ Credential failed, using key fallback: {e}")
+            _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, enrichment_config.cosmos_db_key, enrichment_config.cosmos_db_name, enrichment_config.cosmos_collection_name)
+        else:
+            raise Exception(f"Neither credentials nor connection key available for caching: {e}")
+    
     return _cache
 
 if __name__ == '__main__':
