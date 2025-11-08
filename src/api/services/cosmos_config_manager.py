@@ -13,7 +13,7 @@ class CosmosConfigManager(object):
     _container: ContainerProxy
 
     def __init__(self, cosmos_config: Annotated[CosmosConfig, Depends(CosmosConfig)]):
-        # Use managed identity if available, otherwise fall back to key
+        # Use managed identity if available
         if cosmos_config.credential:
             cosmos_client = CosmosClient(
                 url=cosmos_config.azure_cosmos_db_uri,

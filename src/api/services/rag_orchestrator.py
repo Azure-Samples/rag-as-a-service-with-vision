@@ -110,7 +110,6 @@ class RagOrchestrator(object):
     ) -> AzureSearch:
         return AzureSearch(
             azure_search_endpoint=config._azure_search_endpoint,
-            azure_search_key=None,
             azure_ad_token_provider=config.credential,
             search_type=search_config.search_type,
             index_name=index_name,

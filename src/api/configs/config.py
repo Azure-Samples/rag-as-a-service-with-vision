@@ -36,10 +36,9 @@ class Config(object):
             return DefaultAzureCredential()
 
     def _validate_openai_variables(self):
-        # Updated to use Entra ID authentication - no API key needed
         _OPENAI_VERSION_ENV_VAR = "AZURE_OPENAI_API_VERSION"
         _OPENAI_ENDPOINT_ENV_VAR = "AZURE_OPENAI_ENDPOINT"
-        # Removed API key requirement
+
         _OPENAI_ENV_VARS = [
             _OPENAI_VERSION_ENV_VAR,
             _OPENAI_ENDPOINT_ENV_VAR,

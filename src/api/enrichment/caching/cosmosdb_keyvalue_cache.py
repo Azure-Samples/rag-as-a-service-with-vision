@@ -13,9 +13,11 @@ class CosmosDbKeyValueCache:
     """
     _container: ContainerProxy
 
-    def __init__(self, cosmos_uri: str, credential_or_key, db_name: str, container: str):
+    def __init__(
+        self, cosmos_uri: str, credential, db_name: str, container: str
+    ):
         # Handle both credential objects and key strings
-        cosmos_client = CosmosClient(cosmos_uri, credential_or_key)
+        cosmos_client = CosmosClient(cosmos_uri, credential)
 
         database = cosmos_client.create_database_if_not_exists(db_name)
         try:
