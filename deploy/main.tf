@@ -53,6 +53,13 @@ resource "azurerm_cognitive_account" "computer_vision" {
   }
 }
 
+# Cognitive Services User Role Assignment for User Managed Identity
+resource "azurerm_role_assignment" "computer_vision_user" {
+  scope                = azurerm_cognitive_account.computer_vision.id
+  role_definition_name = "Cognitive Services User"
+  principal_id         = azurerm_user_assigned_identity.main.principal_id
+}
+
 # Cosmos DB Account
 resource "azurerm_cosmosdb_account" "main" {
   name                = var.cosmos_account_name
@@ -128,10 +135,35 @@ resource "azurerm_search_service" "main" {
   replica_count       = 1
   partition_count     = 1
 
+  # Enable Azure AD authentication (disable API key only mode)
+  local_authentication_enabled = true
+  authentication_failure_mode  = "http403"
+
   tags = {
     Environment = "Production"
     Service     = "RAG-Vision"
   }
+}
+
+# Search Service Contributor Role Assignment for User Managed Identity
+resource "azurerm_role_assignment" "search_service_contributor" {
+  scope                = azurerm_search_service.main.id
+  role_definition_name = "Search Service Contributor"
+  principal_id         = azurerm_user_assigned_identity.main.principal_id
+}
+
+# Search Index Data Contributor Role Assignment for Current User
+resource "azurerm_role_assignment" "search_index_data_contributor_current" {
+  scope                = azurerm_search_service.main.id
+  role_definition_name = "Search Index Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.main.principal_id
+}
+
+# Search Index Data Reader Role Assignment for Current User
+resource "azurerm_role_assignment" "search_index_data_reader_current" {
+  scope                = azurerm_search_service.main.id
+  role_definition_name = "Search Index Data Reader"
+  principal_id         = azurerm_user_assigned_identity.main.principal_id
 }
 
 # AI Foundry Hub (Cognitive Services Account)
@@ -164,6 +196,111 @@ resource "azapi_resource" "ai_foundry" {
   }
 
   depends_on = [time_sleep.wait_before_purge]
+}
+
+# Cognitive Services User Role Assignment for AI Foundry Hub
+resource "azurerm_role_assignment" "ai_foundry_user" {
+  scope                = azapi_resource.ai_foundry.id
+  role_definition_name = "Cognitive Services User"
+  principal_id         = azurerm_user_assigned_identity.main.principal_id
+}
+
+# Cognitive Services OpenAI User Role Assignment for AI Foundry Hub (for data plane operations) - Managed Identity
+resource "azurerm_role_assignment" "ai_foundry_openai_user" {
+  scope                = azapi_resource.ai_foundry.id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = azurerm_user_assigned_identity.main.principal_id
+}
+
+# Cognitive Services Contributor Role Assignment for AI Foundry Hub
+resource "azurerm_role_assignment" "ai_foundry_contributor" {
+  scope                = azapi_resource.ai_foundry.id
+  role_definition_name = "Cognitive Services Contributor"
+  principal_id         = azurerm_user_assigned_identity.main.principal_id
+}
+
+# Custom role definition for OpenAI data plane operations
+resource "azurerm_role_definition" "openai_data_operations" {
+  name        = "OpenAI Data Operations - RAG Vision"
+  scope       = azapi_resource.ai_foundry.id
+  description = "Custom role for OpenAI data plane operations including embeddings and chat completions"
+
+  permissions {
+    actions = [
+      "Microsoft.CognitiveServices/accounts/read"
+    ]
+    data_actions = [
+      "Microsoft.CognitiveServices/accounts/OpenAI/deployments/embeddings/action",
+      "Microsoft.CognitiveServices/accounts/OpenAI/deployments/chat/completions/action",
+      "Microsoft.CognitiveServices/accounts/OpenAI/deployments/completions/action",
+      "Microsoft.CognitiveServices/accounts/AIServices/agents/read",
+      "Microsoft.CognitiveServices/accounts/AIServices/*/read",
+      "Microsoft.CognitiveServices/accounts/OpenAI/*/read"
+    ]
+  }
+
+  assignable_scopes = [
+    azapi_resource.ai_foundry.id
+  ]
+}
+
+# Assign custom OpenAI role to managed identity
+resource "azurerm_role_assignment" "ai_foundry_openai_custom_managed" {
+  scope              = azapi_resource.ai_foundry.id
+  role_definition_id = azurerm_role_definition.openai_data_operations.role_definition_resource_id
+  principal_id       = azurerm_user_assigned_identity.main.principal_id
+}
+
+# Development Environment: Add OpenAI permissions to current user since managed identity is not available in dev containers
+# Cognitive Services OpenAI User Role Assignment for Current User
+resource "azurerm_role_assignment" "ai_foundry_openai_user_current" {
+  scope                = azapi_resource.ai_foundry.id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Cognitive Services Contributor Role Assignment for Current User
+resource "azurerm_role_assignment" "ai_foundry_contributor_current" {
+  scope                = azapi_resource.ai_foundry.id
+  role_definition_name = "Cognitive Services Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Assign custom OpenAI role to current user
+resource "azurerm_role_assignment" "ai_foundry_openai_custom_current" {
+  scope              = azapi_resource.ai_foundry.id
+  role_definition_id = azurerm_role_definition.openai_data_operations.role_definition_resource_id
+  principal_id       = data.azurerm_client_config.current.object_id
+}
+
+# Development Environment: Add Computer Vision permissions to current user
+# Cognitive Services User Role Assignment for Current User (Computer Vision)
+resource "azurerm_role_assignment" "computer_vision_user_current" {
+  scope                = azurerm_cognitive_account.computer_vision.id
+  role_definition_name = "Cognitive Services User"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Development Environment: Add Azure Search permissions to current user
+# Search Service Contributor Role Assignment for Current User
+resource "azurerm_role_assignment" "search_service_contributor_current" {
+  scope                = azurerm_search_service.main.id
+  role_definition_name = "Search Service Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Search Index Data Contributor Role Assignment for Current User
+resource "azurerm_role_assignment" "search_index_data_contributor_current_user" {
+  scope                = azurerm_search_service.main.id
+  role_definition_name = "Search Index Data Contributor"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+# Search Index Data Reader Role Assignment for Current User
+resource "azurerm_role_assignment" "search_index_data_reader_current_user" {
+  scope                = azurerm_search_service.main.id
+  role_definition_name = "Search Index Data Reader"
+  principal_id         = data.azurerm_client_config.current.object_id
 }
 
 # Optional timed delay after deletion before purge to avoid 404 (soft-delete not yet visible)

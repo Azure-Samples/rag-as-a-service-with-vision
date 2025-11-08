@@ -1,5 +1,6 @@
 
 import datetime
+import os
 from azure.cosmos import ContainerProxy, CosmosClient, exceptions, PartitionKey
 from azure.identity import DefaultAzureCredential
 from enrichment.config.enrichment_config import EnrichmentConfig, enrichment_config
@@ -63,31 +64,25 @@ class CosmosDbKeyValueCache:
             self._container.upsert_item({'id': key, 'value': value, 'createdAt': datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") })
 
 _cache: Optional[CosmosDbKeyValueCache] = None
-def get_cosmosdb_cache(enrichment_config: EnrichmentConfig = enrichment_config):
+def get_cosmosdb_cache(enrichment_config: EnrichmentConfig = enrichment_config) -> CosmosDbKeyValueCache:
+    """
+    Returns a Cosmos DB cache instance with managed identity authentication only
+    """
     global _cache
 
     if _cache:
         return _cache
 
-    # Use DefaultAzureCredential with managed identity client ID
-    import os
-    try:
-        client_id = os.environ.get("AZURE_CLIENT_ID")
-        if client_id:
-            # Use DefaultAzureCredential with specified client_id for user-assigned managed identity
-            credential = DefaultAzureCredential(managed_identity_client_id=client_id)
-        else:
-            # Use DefaultAzureCredential without client_id
-            credential = DefaultAzureCredential()
-        
-        _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, credential, enrichment_config.cosmos_db_name, enrichment_config.cosmos_collection_name)
-    except Exception as e:
-        # Fallback to connection key if available
-        if hasattr(enrichment_config, 'cosmos_db_key') and enrichment_config.cosmos_db_key:
-            print(f"⚠️ Credential failed, using key fallback: {e}")
-            _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, enrichment_config.cosmos_db_key, enrichment_config.cosmos_db_name, enrichment_config.cosmos_collection_name)
-        else:
-            raise Exception(f"Neither credentials nor connection key available for caching: {e}")
+    # Use managed identity authentication only
+    client_id = os.environ.get("AZURE_CLIENT_ID")
+    if client_id:
+        # Use DefaultAzureCredential with specified client_id for user-assigned managed identity
+        credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+    else:
+        # Use DefaultAzureCredential without client_id
+        credential = DefaultAzureCredential()
+    
+    _cache = CosmosDbKeyValueCache(enrichment_config.cosmos_db_uri, credential, enrichment_config.cosmos_db_name, enrichment_config.cosmos_collection_name)
     
     return _cache
 

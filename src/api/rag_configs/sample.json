@@ -15,14 +15,14 @@
     "embedding_config": {
         "embedding_model_name": "AzureOpenAIEmbeddings",
         "embedding_model_kwargs": {
-            "azure_deployment": "text-embedding-deployment",
-            "openai_api_version": "2024-05-01-preview"
+            "azure_deployment": "text-embedding-3-large-deployment",
+            "openai_api_version": "2024-02-01"
         }
     },
-    "llm_config": {
+    "chat_config": {
         "llm_name": "AzureOpenAI",
         "llm_kwargs": {
-            "api_version": "2024-05-01-preview",
+            "api_version": "2024-02-01",
             "deployment_name": "gpt-4.1-deployment"
         }
     },

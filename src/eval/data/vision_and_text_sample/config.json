@@ -39,11 +39,11 @@
             "openai_api_version": "2023-12-01-preview"
         }
     },
-    "llm_config": {
+    "chat_config": {
         "llm_name": "AzureOpenAI",
         "llm_kwargs": {
             "api_version": "2023-12-01-preview",
-            "deployment_name": "gpt-4o"
+            "deployment_name": "gpt-4o-deployment"
         }
     }
 }

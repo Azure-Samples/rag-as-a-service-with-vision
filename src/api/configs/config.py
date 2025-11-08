@@ -5,16 +5,9 @@ load_dotenv()
 
 
 _AZURE_SEARCH_ENDPOINT_ENV_VAR = "AZURE_SEARCH_ENDPOINT"
-_AZURE_SEARCH_API_KEY_ENV_VAR = "AZURE_SEARCH_API_KEY"
-_AZURE_SEARCH_ENV_VARS = [
-    _AZURE_SEARCH_ENDPOINT_ENV_VAR,
-    _AZURE_SEARCH_API_KEY_ENV_VAR,
-]
-
 
 class Config(object):
     _azure_search_endpoint: str
-    _azure_search_api_key: str
     _credential: DefaultAzureCredential
 
     def __init__(self):
@@ -22,11 +15,9 @@ class Config(object):
         self._credential = self._init_credential()
         
         self._azure_search_endpoint = os.environ.get(_AZURE_SEARCH_ENDPOINT_ENV_VAR)
-        self._azure_search_api_key = os.environ.get(_AZURE_SEARCH_API_KEY_ENV_VAR)
 
-        # For now, keeping search API key until we can migrate that too
-        if not (self._azure_search_endpoint and self._azure_search_api_key):
-            raise Exception(f"The following environment variables are required for azure search: {', '.join(_AZURE_SEARCH_ENV_VARS)}")
+        if not self._azure_search_endpoint:
+            raise Exception(f"The following environment variable is required for azure search: {_AZURE_SEARCH_ENDPOINT_ENV_VAR}")
 
         self._validate_openai_variables()
 
@@ -56,8 +47,6 @@ class Config(object):
 
         self._openai_version = os.environ.get("AZURE_OPENAI_API_VERSION")
         self._openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
-        # Keep API key for fallback in development only
-        self._openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
 
         if not (self._openai_version and self._openai_endpoint):
             raise Exception(f"The following environment variables are required for openai: {', '.join(_OPENAI_ENV_VARS)}")
@@ -71,20 +60,12 @@ class Config(object):
         return self._openai_endpoint
     
     @property
-    def openai_api_key(self):
-        return self._openai_api_key
-    
-    @property
     def credential(self):
         return self._credential
 
     @property
     def azure_search_endpoint(self):
         return self._azure_search_endpoint
-    
-    @property  
-    def azure_search_api_key(self):
-        return self._azure_search_api_key
 
 
 config = Config()
