@@ -2,15 +2,11 @@
 from fastapi import Depends, HTTPException
 from importlib import import_module
 from langchain_community.document_loaders import *
-from langchain_community.vectorstores.azuresearch import AzureSearch, AzureSearchVectorStoreRetriever
+from langchain_community.vectorstores.azuresearch import AzureSearch
 from langchain_core.embeddings import Embeddings
 from langchain_core.document_loaders import BaseLoader
 from langchain_core.documents import Document
 from langchain_text_splitters import TextSplitter
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough, RunnableParallel
-from langchain_openai import AzureChatOpenAI
 from loguru import logger
 from typing import Annotated, Optional
 
@@ -41,11 +37,31 @@ class RagOrchestrator(object):
 
 
     def _init_embeddings(self, embedding_config: EmbeddingConfig) -> Embeddings:
-        embedding_function = getattr(
-            import_module("langchain_community.embeddings"),
-            embedding_config.embedding_model_name
+        # Use AzureOpenAIEmbeddings with managed identity authentication
+        from langchain_openai import AzureOpenAIEmbeddings
+        from azure.identity import get_bearer_token_provider
+        
+        deployment_name = embedding_config.embedding_model_kwargs.get("azure_deployment", "text-embedding-3-large")
+        
+        # Create token provider function for LangChain
+        token_provider = get_bearer_token_provider(
+            self._config.credential,
+            "https://cognitiveservices.azure.com/.default"
         )
-        return embedding_function(**embedding_config.embedding_model_kwargs)
+        
+        # Filter out unsupported parameters
+        supported_kwargs = {}
+        for k, v in embedding_config.embedding_model_kwargs.items():
+            if k not in ["azure_deployment", "openai_api_version"]:
+                supported_kwargs[k] = v
+        
+        return AzureOpenAIEmbeddings(
+            azure_deployment=deployment_name,
+            api_version=self._config.openai_version,
+            azure_endpoint=self._config.openai_endpoint,
+            azure_ad_token_provider=token_provider,
+            **supported_kwargs
+        )
 
     def _load_documents(
         self,
@@ -94,7 +110,7 @@ class RagOrchestrator(object):
     ) -> AzureSearch:
         return AzureSearch(
             azure_search_endpoint=config._azure_search_endpoint,
-            azure_search_key=config._azure_search_api_key,
+            azure_ad_token_provider=config.credential,
             search_type=search_config.search_type,
             index_name=index_name,
             embedding_function=embedding_function
@@ -136,13 +152,7 @@ class RagOrchestrator(object):
         index_name = _build_index_name(config_id)
         config = self._try_get_config(config_id)
 
-        prompt = ChatPromptTemplate.from_template(config.chat_config.prompt_template)
-        model = AzureChatOpenAI(
-            azure_deployment=config.chat_config.azure_deployment,
-            api_version=self._config.openai_version,
-            **config.chat_config.llm_kwargs
-        )
-
+        # Get relevant documents using search
         embedding_function = self._init_embeddings(config.embedding_config)
         vector_store = self._init_azure_search(
             self._config,
@@ -150,36 +160,58 @@ class RagOrchestrator(object):
             embedding_function,
             index_name
         )
-        retriever = AzureSearchVectorStoreRetriever(
-            vectorstore=vector_store,
-            search_type=config.search_config.search_type,
-            k=config.search_config.search_k
+        
+        # Retrieve relevant documents
+        logger.info("Searching for relevant documents...")
+        relevant_docs = vector_store.similarity_search(
+            query, k=config.search_config.search_k
         )
-
-        def format_docs(docs):
-            return "\n\n".join([d.page_content for d in docs])
-
-        chain = (
-            RunnablePassthrough.assign(context=(lambda x: format_docs(x["context"])))
-            | prompt
-            | model
-            | StrOutputParser()
+        
+        # Format context from retrieved documents
+        context = "\n\n".join([doc.page_content for doc in relevant_docs])
+        
+        # Prepare the prompt
+        prompt_template = config.chat_config.prompt_template
+        formatted_prompt = prompt_template.format(
+            context=context, question=query
         )
-
-        chain_with_source = RunnableParallel(
-            {"context": retriever, "question": RunnablePassthrough()}
-        ).assign(answer=chain)
-
-        logger.info(f"Chatting with model for {config_id}...")
-        chain_response = chain_with_source.invoke(query)
-
-        answer = chain_response["answer"]
-        sources_dict = [doc.dict() for doc in chain_response["context"]]
-        return ChatResponse(
-            answer=answer,
-            sources=sources_dict
+        
+        # Use Azure OpenAI client directly (bypass LangChain)
+        from openai import AzureOpenAI
+        from azure.identity import get_bearer_token_provider
+        
+        token_provider = get_bearer_token_provider(
+            self._config.credential,
+            "https://cognitiveservices.azure.com/.default"
         )
-
+        
+        try:
+            client = AzureOpenAI(
+                azure_endpoint=self._config.openai_endpoint,
+                api_version=self._config.openai_version,
+                azure_ad_token_provider=token_provider
+            )
+            
+            logger.info(f"Chatting with model for {config_id}...")
+            response = client.chat.completions.create(
+                model=config.chat_config.azure_deployment,
+                messages=[
+                    {"role": "user", "content": formatted_prompt}
+                ],
+                max_tokens=1000,
+                temperature=0.7
+            )
+            
+            answer = response.choices[0].message.content
+            sources_dict = [doc.dict() for doc in relevant_docs]
+            
+            return ChatResponse(
+                answer=answer,
+                sources=sources_dict
+            )
+            
+        except Exception as e:
+            raise Exception(f"Direct OpenAI client failed: {e}")
 
     def upload_documents(
         self,

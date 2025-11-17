@@ -9,24 +9,33 @@
 	],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {
+		"ghcr.io/devcontainers/features/terraform:1": {
+			"version": "latest",
+			"tflint": "latest",
+			"terragrunt": "latest"
+		},
+		"ghcr.io/devcontainers/features/azure-cli:1": {
+			"version": "latest"
+		}
+	},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "pip3 install --user -r requirements.txt",
+	"postCreateCommand": "cd src/api && pip3 install --user -r requirements.txt && cd ../../deploy && terraform init",
 
 	// Configure tool-specific properties.
 	"customizations": {
 		"vscode": {
-			"settings": {
-				"extensions": [
-					"ms-python.python",
-					"ms-python.vscode-pylance",
-					"ms-python.flake8"
-				]
-			}
+			"extensions": [
+				"ms-python.python",
+				"ms-python.vscode-pylance",
+				"ms-python.flake8",
+				"HashiCorp.terraform",
+				"ms-vscode.azurecli"
+			]
 		}
 	}
 

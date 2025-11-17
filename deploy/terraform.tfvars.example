@@ -1,0 +1,63 @@
+# Terraform configuration values - Example file
+# Copy this file to terraform.tfvars and update the values for your deployment
+
+# Resource Configuration
+resource_group_name = "rg-rag-vision-service"
+location           = "West US"
+
+# Managed Identity (will be created)
+managed_identity_name = "mi-rag-vision-service"
+
+# Cosmos DB (will be created)
+cosmos_account_name = "cosmos-rag-vision"
+cosmos_database_name        = "rag-vision-db"
+cosmos_container_name       = "rag-documents"
+cosmos_enrichment_container = "enrichment-cache"
+
+# Azure Cognitive Search (integrated with AI Foundry)
+search_service_name = "search-rag-vision-service"
+search_sku         = "standard"
+
+# AI Foundry Project
+ai_foundry_project_name = "aifoundry-rag-vision"
+key_vault_name         = "kv-rag-vision-srv"
+storage_account_name = "stragrv1762477899"
+
+# Azure Computer Vision
+computer_vision_name = "cv-rag-vision-service"
+computer_vision_sku  = "S1"
+
+# Model Deployments for RAG-as-a-Service with Vision
+# Using GlobalStandard scaling with separate deployment names and model names
+model_deployments = [
+  {
+    name       = "gpt-4o-deployment"
+    model_name = "gpt-4o"
+    format     = "OpenAI" 
+    version    = "2024-11-20"
+    sku = {
+      name     = "GlobalStandard"
+      capacity = 10
+    }
+  },
+  {
+    name       = "gpt-4.1-deployment"
+    model_name = "gpt-4.1"
+    format     = "OpenAI"
+    version    = "2025-04-14"
+    sku = {
+      name     = "GlobalStandard"
+      capacity = 10
+    }
+  },
+  {
+    name       = "text-embedding-3-large-deployment"
+    model_name = "text-embedding-3-large"
+    format     = "OpenAI"
+    version    = "1"
+    sku = {
+      name     = "GlobalStandard"
+      capacity = 30
+    }
+  }
+]

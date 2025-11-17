@@ -1,6 +1,7 @@
 import openai
 import os
 from openai import AzureOpenAI
+from azure.identity import DefaultAzureCredential
 from enrichment.models.endpoint import GeneratedResponse
 from enrichment.config.enrichment_config import enrichment_config
 from enrichment.utils.files_util import get_image_format
@@ -19,11 +20,20 @@ class AzureMllmService:
 
         messages.append({ "role": "user", "content": content })
 
+        # Use Entra ID authentication only
+        client_id = os.environ.get("AZURE_CLIENT_ID")
+        if client_id:
+            # Use DefaultAzureCredential with specified client_id for user-assigned managed identity
+            credential = DefaultAzureCredential(managed_identity_client_id=client_id)
+        else:
+            # Use DefaultAzureCredential without client_id
+            credential = DefaultAzureCredential()
+        
         client = AzureOpenAI(
             azure_endpoint = enrichment_config.mllm_endpoint,
             azure_deployment = enrichment_config.mllm_model,
             api_version = enrichment_config.mllm_api_version,
-            api_key = enrichment_config.mllm_key,
+            azure_ad_token_provider = credential,
         )
 
         completion = client.chat.completions.create(

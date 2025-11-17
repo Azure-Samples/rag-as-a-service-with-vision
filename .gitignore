@@ -413,3 +413,11 @@ src/api/temp/**
 # eval output to ignore
 src/eval/output/**
 !src/eval/output/.gitkeep
+
+# Terraform files to ignore
+deploy/terraform.tfvars
+deploy/.terraform/
+deploy/.terraform.lock.hcl
+deploy/terraform.tfstate
+deploy/terraform.tfstate.backup
+deploy/*.tfplan

@@ -4,7 +4,8 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from azure.ai.vision.imageanalysis import ImageAnalysisClient
 from azure.ai.vision.imageanalysis.models import VisualFeatures
-from azure.core.credentials import AzureKeyCredential
+import os
+from azure.identity import DefaultAzureCredential
 from enrichment.config.enrichment_config import EnrichmentConfig
 
 class AzureAIVisionModel:
@@ -30,11 +31,29 @@ class AzureAIVisionModel:
 
     def load_computer_vision_model(self):
         enrichment_config = EnrichmentConfig()
-        model = ImageAnalysisClient(
-            endpoint=enrichment_config.vision_endpoint,
-            credential=AzureKeyCredential(key=enrichment_config.vision_key)
-        )
-
-        return model
+        
+        try:
+            # Use DefaultAzureCredential following Azure SDK best practices
+            client_id = os.environ.get("AZURE_CLIENT_ID")
+            if client_id:
+                credential = DefaultAzureCredential(managed_identity_client_id=client_id,
+                        exclude_cli_credential=True,
+                        exclude_powershell_credential=True,
+                        exclude_developer_cli_credential=True,
+                        exclude_visual_studio_code_credential=True)
+            else:
+                credential = DefaultAzureCredential()
+            
+            model = ImageAnalysisClient(
+                endpoint=enrichment_config.vision_endpoint,
+                credential=credential
+            )
+            
+            return model
+            
+        except Exception as e:
+            print(f"⚠️ Computer Vision managed identity authentication failed: {e}")
+            print("💡 Error details:", str(e))
+            raise Exception(f"Computer Vision authentication failed: {e}")
 
 azure_vision_service = AzureAIVisionModel()
